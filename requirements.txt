@@ -1,0 +1,40 @@
+# --- Flask Web Server ---
+Flask
+Flask-Cors
+python-dotenv
+gunicorn # Recommended for production, though not explicitly imported
+
+# --- Database ---
+psycopg2-binary
+
+# --- Authentication & Security ---
+bcrypt
+PyJWT
+
+# --- LangChain & AI ---
+langchain
+langchain-core
+langchain-nvidia-ai-endpoints
+pydantic
+json-repair
+
+# --- Google APIs ---
+google-api-python-client
+google-auth
+google-auth-oauthlib
+
+# --- Microsoft (Outlook) API ---
+msal
+
+# --- Data Handling ---
+pandas
+openpyxl # Required by pandas for .xlsx files
+requests # For all HTTP proxy calls
+
+
+langgraph
+langchain-community
+redis 
+chromadb 
+langchain-openai
+langchain-chroma
