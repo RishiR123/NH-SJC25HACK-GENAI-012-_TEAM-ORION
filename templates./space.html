@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales OS powered by Theta</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Note: Using placeholder for favicon as url_for won't work in a static file -->
+    <link rel="shortcut icon" href="https://placehold.co/32x32/EAD9FF/7C3AED?text=S&font=inter" type="image/x-icon">
+    <link rel="icon" href="https://placehold.co/32x32/EAD9FF/7C3AED?text=S&font=inter" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        /* DESIGN PRINCIPLES APPLIED:
+         * Primary Accent: #7C3AED (Deep Purple)
+         * Base Background: linear-gradient(135deg, #EAD9FF 0%, #FBE8F3 100%)
+         * Glass Panels: rgba(255, 255, 255, 0.45) with blur(24px)
+         * Soft Borders: rgba(0, 0, 0, 0.1)
+         * Text Primary: #000000 (Dark Slate)
+         * Text Secondary: #000000 (Medium Slate)
+         * Typography: Inter
+        */
+
+        /* General Reset and Box Sizing */
+        html {
+            box-sizing: border-box;
+        }
+        *, *::before, *::after {
+            box-sizing: inherit;
+            transition: all 0.3s ease;
+        }
+
+        /* Basic styling for the body and overall layout */
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: linear-gradient(135deg, #EAD9FF 0%, #FBE8F3 100%);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            color: #000000;
+        }
+
+        body.chatbox-active::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backdrop-filter: blur(8px);
+            z-index: 1;
+        }
+
+        /* Sidebar container styling */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 220px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            display: flex;
+            flex-direction: column;
+            z-index: 3;
+            transition: left 0.3s ease;
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar.hidden {
+            left: -220px;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-img {
+            max-width: 120px;
+            height: auto;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .logo-img:hover {
+            opacity: 0.8;
+        }
+
+        .nav {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav li {
+            margin: 5px 0;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            border-radius: 16px;
+            color: #000000;
+        }
+
+        .nav li:hover .nav-item {
+            background: rgba(0, 0, 0, 0.05);
+            color: #000000;
+        }
+
+        .nav li.active .nav-item {
+            background: #7C3AED;
+            color: #FFFFFF;
+            font-weight: 600;
+        }
+
+        .nav li.active .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 60%;
+            width: 4px;
+            background-color: #FFFFFF;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .nav li.active .nav-item svg {
+            fill: #FFFFFF;
+        }
+
+        .nav svg {
+            width: 20px;
+            height: 20px;
+            fill: #000000;
+        }
+
+        .nav li:hover .nav-item svg {
+            fill: #000000;
+        }
+
+        .nav .dropdown-arrow {
+            position: absolute;
+            right: 15px;
+        }
+
+        .nav li.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .submenu {
+            list-style: none;
+            padding: 5px 0 5px 35px;
+            margin: 0;
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        .submenu a {
+             font-size: 0.9em;
+             color: #000000;
+        }
+
+        .nav li.open > .submenu {
+            max-height: 200px;
+        }
+
+        .submenu li {
+            padding: 8px 15px;
+            border-radius: 12px;
+            background: none;
+            text-align: left;
+            position: relative;
+        }
+
+        .submenu li:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .submenu li:hover a {
+             color: #000000;
+        }
+
+        .submenu li.active a {
+            color: #7C3AED;
+            font-weight: 500;
+        }
+
+        .bottom-section {
+            padding: 15px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 16px;
+        }
+
+        .profile:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .profile-icon-container {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .profile-icon {
+            width: 24px;
+            height: 24px;
+            fill: #000000;
+        }
+
+        .profile-icon-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Helper class to hide default icon when img loads */
+        .hidden {
+            display: none;
+        }
+
+        .profile-name {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            color: #000000;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* NEW STYLES FOR THOUGHT STREAMING */
+        .thought-dropdown {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        .thought-dropdown summary {
+            cursor: pointer;
+            font-size: 0.8em;
+            color: #000000;
+            opacity: 0.8;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        .thought-dropdown summary:hover {
+            background: rgba(0,0,0,0.05);
+        }
+        .thought-step {
+            font-size: 0.85em;
+            padding: 10px;
+            background: rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 12px;
+            margin-top: 8px;
+            margin-left: 15px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .thought-step pre {
+             background-color: rgba(0,0,0,0.05);
+             border-color: rgba(0,0,0,0.1);
+        }
+        .thought-step code {
+            word-break: break-all;
+        }
+        .thought-step strong {
+            color: #7C3AED;
+        }
+        /* END NEW STYLES */
+
+        
+
+        .footer-links li {
+            padding: 10px 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            background: none;
+            border-radius: 12px;
+            color: #000000;
+        }
+
+        .footer-links li:hover {
+            color: #7C3AED;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .footer-links li:hover svg {
+            fill: #7C3AED;
+        }
+
+        .footer-links svg {
+            width: 18px;
+            height: 18px;
+            fill: #000000;
+        }
+
+        .toggle-btn {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 5;
+            position: fixed;
+            top: 20px;
+            left: 240px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .toggle-btn span {
+            display: block;
+            width: 20px;
+            height: 2px;
+            background: #000000;
+            margin: 2px 0;
+            border-radius: 2px;
+        }
+
+        .toggle-btn.visible {
+            left: 20px;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            margin-left: 220px;
+            padding: 20px;
+            gap: 20px;
+            z-index: 2;
+            min-height: 0;
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .sidebar.hidden ~ .chat-container {
+            margin-left: 0;
+        }
+
+        .chat-display {
+            width: 100%;
+            max-width: 800px;
+            padding: 0;
+            gap: 15px;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(30px);
+            max-height: 0;
+            overflow-y: auto;
+        }
+
+        .chat-display::-webkit-scrollbar { width: 8px; }
+        .chat-display::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        .chat-display::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.2); border-radius: 10px; }
+        .chat-display::-webkit-scrollbar-thumb:hover { background-color: rgba(0,0,0,0.3); }
+
+        .message-container {
+            display: flex;
+            width: 100%;
+        }
+
+        .user-message-container {
+            justify-content: flex-end;
+        }
+
+        .ai-message-container {
+            justify-content: flex-start;
+            flex-direction: column; /* Make dropdown and bubble stack */
+            align-items: flex-start; /* Align items to the left */
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .user-message-bubble {
+            background: #7C3AED;
+            color: #FFFFFF;
+            font-weight: 500;
+            border-bottom-right-radius: 5px;
+        }
+
+        .ai-message-bubble {
+            background: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #000000;
+            border-bottom-left-radius: 5px;
+        }
+
+        .ai-message-bubble pre {
+            background-color: rgba(0,0,0,0.05);
+            padding: 10px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 0.9em;
+            border: 1px solid rgba(0,0,0,0.1);
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .ai-message-bubble code {
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .loading-indicator {
+            align-self: flex-start;
+            padding: 12px 18px;
+            font-style: italic;
+            color: #000000;
+        }
+
+        .chat-greeting {
+            width: 100%;
+            max-width: 800px;
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #000000;
+            text-shadow: none;
+        }
+
+        .theta-messages {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(24px);
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .theta-messages h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 500;
+            color: #000000;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .message-item {
+            padding: 10px 0 10px 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            border-left: 3px solid;
+        }
+
+        .message-tip {
+            border-left-color: #7C3AED;
+        }
+        .message-tip strong {
+            color: #7C3AED;
+        }
+
+        .message-alert {
+            border-left-color: #f59e0b;
+        }
+        .message-alert strong {
+            color: #f59e0b;
+        }
+
+        .message-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .message-item p {
+            margin: 0 0 5px 0;
+            line-height: 1.6;
+            color: #000000;
+        }
+
+        .message-item small {
+            color: #000000;
+            opacity: 0.7;
+            font-size: 0.8em;
+        }
+
+        .sticky-footer {
+            position: sticky;
+            bottom: 0;
+            width: 100%;
+            max-width: 800px;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: auto;
+            padding-bottom: 20px;
+        }
+
+        .chat-box {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(24px);
+            padding: 0 10px 0 20px;
+            height: 50px;
+            flex-shrink: 0;
+        }
+
+        .agent-disclaimer {
+            font-size: 11px;
+            color: #6b7280;
+            text-align: center;
+            margin-top: 8px;
+            padding: 0 10px;
+            text-shadow: 0 0 5px rgba(255,255,255,0.7);
+        }
+
+        .chat-box.focused {
+            border-color: #7C3AED;
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
+        }
+
+        .chat-box input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: #000000;
+            outline: none;
+            padding: 0 10px;
+            font-size: 14px;
+        }
+        .chat-box input::placeholder {
+            color: #000000;
+        }
+
+
+        .chat-box button {
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #000000;
+            margin-left: 10px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border-radius: 50%;
+        }
+
+        .chat-box button:hover {
+            background-color: rgba(0,0,0,0.08);
+            color: #7C3AED;
+        }
+
+        .metrics-header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            color: #000000;
+        }
+
+        .metrics-header-controls h2 {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .metrics-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        #manageMetricsBtn, #lockLayoutBtn {
+            background: transparent;
+            color: #7C3AED;
+            border: 2px solid #7C3AED;
+            padding: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        #manageMetricsBtn:hover, #lockLayoutBtn:hover {
+            background: #7C3AED;
+            color: #FFFFFF;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
+        }
+
+        #lockLayoutBtn.locked {
+            background: #7C3AED;
+            color: #FFFFFF;
+            border-color: #7C3AED;
+        }
+
+        .metrics-grid {
+            width: 100%;
+            max-width: 800px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .metrics-grid.layout-locked .metric-card {
+            cursor: default;
+        }
+
+        .metric-card {
+            background-color: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border-radius: 24px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            cursor: grab;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        }
+
+        .metric-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .metric-header svg {
+            width: 24px;
+            height: 24px;
+            fill: #000000;
+        }
+
+        .metric-header h3 {
+            margin: 0;
+            font-size: 1em;
+            font-weight: 500;
+            color: #000000;
+        }
+
+        .metric-value {
+            font-size: 2.2em;
+            font-weight: 600;
+            margin: 0;
+            color: #000000;
+        }
+
+        .metric-comparison {
+            font-size: 0.85em;
+            color: #000000;
+        }
+
+        .metric-graph-container {
+            max-height: 0;
+            overflow: hidden;
+            margin-top: 10px;
+            opacity: 0;
+        }
+
+        .metric-card.expanded .metric-graph-container {
+            max-height: 350px;
+            opacity: 1;
+        }
+
+        .metric-chart-controls {
+            display: none;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 10px;
+            opacity: 0;
+        }
+
+        .metric-card.expanded .metric-chart-controls {
+            display: flex;
+            opacity: 1;
+        }
+
+        .metric-chart-controls button {
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #000000;
+            padding: 4px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .metric-chart-controls button:hover,
+        .metric-chart-controls button.active {
+            background: #7C3AED;
+            border-color: #7C3AED;
+            color: #FFFFFF;
+        }
+
+        .metric-chart-controls button:hover svg,
+        .metric-chart-controls button.active svg {
+           fill: #FFFFFF;
+        }
+
+        .metric-chart-controls button svg {
+            width: 14px;
+            height: 14px;
+            fill: #000000;
+        }
+
+        .metric-card.hidden-metric {
+            display: none;
+        }
+
+        .sortable-ghost {
+            opacity: 0.4;
+            background: rgba(124, 58, 237, 0.1);
+        }
+        .sortable-chosen, .sortable-drag {
+            opacity: 1 !important;
+            transform: scale(1.02) translateY(-6px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            cursor: grabbing !important;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.visible { display: flex; }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(30px);
+            padding: 30px;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+            color: #000000;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        #closeModalBtn {
+            background: none;
+            border: none;
+            color: #000000;
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+        }
+
+        #closeModalBtn:hover {
+            color: #000000;
+        }
+
+        .modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .metric-option {
+            display: flex;
+            align-items: center;
+            font-size: 1em;
+        }
+
+        .metric-option label {
+            margin-left: 12px;
+            cursor: pointer;
+        }
+
+        .metric-option input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            height: 22px;
+            width: 22px;
+            background-color: transparent;
+            border: 2px solid #000000;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+            position: relative;
+        }
+        .metric-option input[type="checkbox"]:after {
+            content: '✔';
+            font-size: 16px;
+            font-weight: bold;
+            color: #FFFFFF;
+            position: absolute;
+            opacity: 0;
+            transform: scale(0.5);
+        }
+        .metric-option input[type="checkbox"]:checked {
+            background-color: #7C3AED;
+            border-color: #7C3AED;
+        }
+        .metric-option input[type="checkbox"]:checked:after {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        body.chatbox-active .chat-container {
+            gap: 0;
+        }
+
+        body.chatbox-active .chat-greeting,
+        body.chatbox-active .theta-messages,
+        body.chatbox-active .metrics-header-controls,
+        body.chatbox-active .metrics-grid {
+            opacity: 0;
+            visibility: hidden;
+            max-height: 0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        body.chatbox-active .chat-display {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            flex-grow: 1;
+            max-height: 100%;
+            padding: 20px 0;
+        }
+
+        @media(max-width: 768px) {
+            .sidebar {
+                left: -220px;
+            }
+            .sidebar.active {
+                left: 0;
+            }
+            .chat-container {
+                margin-left: 0;
+                padding: 10px;
+            }
+            .chat-box {
+                width: 100%;
+                max-width: 100%;
+            }
+            .toggle-btn {
+                left: 20px;
+                transform: none;
+            }
+            .chat-greeting {
+                font-size: 2em;
+            }
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toggle-btn" id="toggleBtn">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        
+        <div class="nav">
+            <ul>
+                <li class="active"><a href="/space"><div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>Space</div></a></li>
+                <li id="crmMenu">
+                    <div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 13h6v-2H4v2zm0 4h6v-2H4v2zm0-8h6V7H4v2zm8 2h9V7h-9v2zm0 4h9v-2h-9v2zm0 4h9v-2h-9v2z"/></svg>Mini-Crm<svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div>
+                    <ul class="submenu"><li><a href="/mini-crm/leads">Leads</a></li><li><a href="/mini-crm/deals">Deals</a></li><li><a href="/mini-crm/sales-funnel">Sales Funnel</a></li></ul>
+                </li>
+                <li><a href="/calendar"><div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>Calendar</div></a></li>
+
+                <li id="salesMenu">
+                    <div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zM10 4h4v2h-4V4zm10 15H4V8h16v11z"/></svg>Sales<svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div>
+                    <ul class="submenu">
+                        <li><a href="/sales/pre-sales">Pre-Sales</a></li>
+                        <li><a href="/sales/post-sales">Post-Sales</a></li>
+                    </ul>
+                </li>
+                <!-- Removing Agent Connect as it's now integrated -->
+            </ul>
+        </div>
+
+        <div class="bottom-section">
+            <div class="profile">
+                <div class="profile-icon-container">
+                    <img id="profile-img" src="" alt="User Profile" class="profile-icon-img hidden" onerror="this.classList.add('hidden'); document.getElementById('default-profile-icon').classList.remove('hidden');">
+                    <svg id="default-profile-icon" class="profile-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </div>
+                <span class="profile-name" id="profile-name"></span>
+            </div>
+
+            <ul class="footer-links">
+                <li id="settings-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.08-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49.42l.38-2.65c.61-.25 1.17-.59 1.69.98l2.49 1c.23.08.49 0 .61.22l2-3.46c.12-.22.07.49-.12.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+                    </svg>
+                    Settings
+                </li>
+                <li id="logout-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 13v-2H7v-2h9V7l5 4l-5 4zm-5 6h9V4h-9v3H9V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-3h2v3z"/>
+                    </svg>
+                    Log Out
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main content area for the chat box -->
+    <div class="chat-container">
+        <div class="chat-greeting">Hi <span id="user-display-name"></span></div>
+
+        <!-- MESSAGES FROM THETA -->
+        <div class="theta-messages">
+            <h3>Messages from Theta</h3>
+            <div class="message-item message-tip">
+                <p><strong>Tip of the day:</strong> Follow up with leads within 5 minutes to increase conversion rates by 9x.</p>
+                <small>October 26, 2025</small>
+            </div>
+            <div class="message-item message-alert">
+                <p><strong>Alert:</strong> You have 3 high-priority tasks due today in your Mini CRM.</p>
+                <small>October 26, 2025</small>
+            </div>
+        </div>
+
+        <div class="metrics-header-controls">
+            <h2>Your Space</h2>
+            <div class="metrics-buttons">
+                <button id="lockLayoutBtn">Lock Layout</button>
+                <button id="manageMetricsBtn">Manage Metrics</button>
+            </div>
+        </div>
+
+        <!-- METRICS DASHBOARD -->
+        <div class="metrics-grid">
+            <!-- Demo Booked Rate -->
+            <div class="metric-card" data-metric="demoBookedRate">
+                <div class="metric-header">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+                    <h3>Demo Booked Rate</h3>
+                </div>
+                <p class="metric-value">0%</p>
+                <small class="metric-comparison">No data yet</small>
+                <div class="metric-chart-controls">
+                    <button data-chart-id="demoBookedRateChart" data-chart-type="line" class="active" title="Line Chart"><svg viewBox="0 0 24 24"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.09-4-4L2 16.99z"></path></svg></button>
+                    <button data-chart-id="demoBookedRateChart" data-chart-type="bar" title="Bar Chart"><svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"></path></svg></button>
+                    <button data-chart-id="demoBookedRateChart" data-chart-type="radar" title="Radar Chart"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"></path></svg></button>
+                </div>
+                <div class="metric-graph-container">
+                    <canvas id="demoBookedRateChart"></canvas>
+                </div>
+            </div>
+            <!-- Opportunity Creation -->
+            <div class="metric-card" data-metric="opportunityCreation">
+                <div class="metric-header">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5zm4 4h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
+                    <h3>Opportunities</h3>
+                </div>
+                <p class="metric-value">0</p>
+                <small class="metric-comparison">No data yet</small>
+                <div class="metric-chart-controls">
+                    <button data-chart-id="opportunityCreationChart" data-chart-type="line" title="Line Chart"><svg viewBox="0 0 24 24"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.09-4-4L2 16.99z"></path></svg></button>
+                    <button data-chart-id="opportunityCreationChart" data-chart-type="bar" class="active" title="Bar Chart"><svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"></path></svg></button>
+                    <button data-chart-id="opportunityCreationChart" data-chart-type="radar" title="Radar Chart"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"></path></svg></button>
+                </div>
+                <div class="metric-graph-container">
+                    <canvas id="opportunityCreationChart"></canvas>
+                </div>
+            </div>
+            <!-- Revenue -->
+            <div class="metric-card" data-metric="revenue">
+                <div class="metric-header">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c2.07-.4 3.5-1.65 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                    <h3>Revenue</h3>
+                </div>
+                <p class="metric-value">$0</p>
+                <small class="metric-comparison">No data yet</small>
+                <div class="metric-chart-controls">
+                     <button data-chart-id="revenueChart" data-chart-type="line" class="active" title="Line Chart"><svg viewBox="0 0 24 24"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.09-4-4L2 16.99z"></path></svg></button>
+                    <button data-chart-id="revenueChart" data-chart-type="bar" title="Bar Chart"><svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"></path></svg></button>
+                    <button data-chart-id="revenueChart" data-chart-type="radar" title="Radar Chart"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"></path></svg></button>
+                </div>
+                <div class="metric-graph-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+             <!-- Closed Won -->
+            <div class="metric-card" data-metric="closedWon">
+                <div class="metric-header">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    <h3>Deals Won</h3>
+                </div>
+                <p class="metric-value">0</p>
+                <small class="metric-comparison">No data yet</small>
+                <div class="metric-chart-controls">
+                    <button data-chart-id="closedWonChart" data-chart-type="line" title="Line Chart"><svg viewBox="0 0 24 24"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.09-4-4L2 16.99z"></path></svg></button>
+                    <button data-chart-id="closedWonChart" data-chart-type="bar" class="active" title="Bar Chart"><svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"></path></svg></button>
+                    <button data-chart-id="closedWonChart" data-chart-type="radar" title="Radar Chart"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"></path></svg></button>
+                </div>
+                <div class="metric-graph-container">
+                    <canvas id="closedWonChart"></canvas>
+                </div>
+            </div>
+            <!-- Response Rate -->
+            <div class="metric-card" data-metric="responseRate">
+                <div class="metric-header">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    <h3>Response Rate</h3>
+                </div>
+                <p class="metric-value">0%</p>
+                <small class="metric-comparison">No data yet</small>
+                <div class="metric-chart-controls">
+                     <button data-chart-id="responseRateChart" data-chart-type="line" class="active" title="Line Chart"><svg viewBox="0 0 24 24"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.09-4-4L2 16.99z"></path></svg></button>
+                    <button data-chart-id="responseRateChart" data-chart-type="bar" title="Bar Chart"><svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"></path></svg></button>
+                    <button data-chart-id="responseRateChart" data-chart-type="radar" title="Radar Chart"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"></path></svg></button>
+                </div>
+                <div class="metric-graph-container">
+                    <canvas id="responseRateChart"></canvas>
+                </div>
+            </div>
+            <!-- Open Reply Rate -->
+             <div class="metric-card" data-metric="openReplyRate">
+                <div class="metric-header">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.99 8c0-.55-.45-1-1-1h-6.17l2.42-5.71c.18-.42 0-.93-.42-1.11-.43-.18-.93 0-1.11.42L13 6H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h13.09c.47 0 .88-.33.98-.79l1.9-8.41C21.99 8.52 22 8.26 22 8V8z"/></svg>
+                    <h3>Open/Reply Rate</h3>
+                </div>
+                <p class="metric-value">0%</p>
+                <small class="metric-comparison">No data yet</small>
+                <div class="metric-chart-controls">
+                     <button data-chart-id="openReplyRateChart" data-chart-type="line" class="active" title="Line Chart"><svg viewBox="0 0 24 24"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.09-4-4L2 16.99z"></path></svg></button>
+                    <button data-chart-id="openReplyRateChart" data-chart-type="bar" title="Bar Chart"><svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"></path></svg></button>
+                    <button data-chart-id="openReplyRateChart" data-chart-type="radar" title="Radar Chart"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"></path></svg></button>
+                </div>
+                <div class="metric-graph-container">
+                    <canvas id="openReplyRateChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-display" id="chatDisplay">
+            <!-- Chat messages will be appended here -->
+        </div>
+
+        <div class="sticky-footer">
+            <div class="chat-box">
+                <input id="chatInput" type="text" placeholder="Ask your agent anything...">
+                <button id="sendBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </div>
+            <!-- UPDATED DISCLAIMER -->
+            <p class="agent-disclaimer">This agent uses a ReAct framework. Responses may take a moment as it reasons and acts.</p>
+        </div>
+    </div>
+
+    <!-- Metrics Management Modal -->
+    <div id="metricsModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Manage Metrics</h2>
+                <button id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body" id="metricsList">
+                <!-- Checkboxes will be dynamically populated by JS -->
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('jwt_token');
+            function parseJwt(token) {
+                try { return JSON.parse(atob(token.split('.')[1])); } catch (e) { return null; }
+            }
+            if (!token) { window.location.href = '/auth'; return; }
+            const decodedToken = parseJwt(token);
+            if (!decodedToken || decodedToken.exp * 1000 < Date.now()) {
+                localStorage.removeItem('jwt_token');
+                window.location.href = '/auth';
+                return;
+            }
+
+            const userName = decodedToken.name || 'User';
+            document.getElementById('profile-name').textContent = userName;
+            document.getElementById('user-display-name').textContent = userName.split(' ')[0];
+
+            // --- All Element Selections ---
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const salesMenu = document.getElementById('salesMenu');
+            const crmMenu = document.getElementById('crmMenu');
+            const chatbox = document.querySelector('.chat-box');
+            const chatInput = document.getElementById('chatInput');
+            const chatDisplay = document.getElementById('chatDisplay');
+            const body = document.body;
+            const logoutBtn = document.getElementById('logout-btn');
+            const settingsBtn = document.getElementById('settings-btn');
+            const logoImg = document.querySelector('.logo-img');
+            const sendBtn = document.getElementById('sendBtn');
+
+            // --- Sidebar & Navigation Listeners ---
+            if (logoImg) {
+                logoImg.addEventListener('click', () => { window.location.href = '/'; });
+            }
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('hidden');
+                toggleBtn.classList.toggle('visible');
+            });
+            salesMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+                salesMenu.classList.toggle('open');
+            });
+            crmMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+                crmMenu.classList.toggle('open');
+            });
+            settingsBtn.addEventListener('click', () => { window.location.href = '/settings'; });
+            logoutBtn.addEventListener('click', () => {
+                localStorage.removeItem('jwt_token');
+                window.location.href = '/auth';
+            });
+
+            // --- Chat UI Listeners ---
+            chatInput.addEventListener('focus', () => {
+                body.classList.add('chatbox-active');
+                chatbox.classList.add('focused');
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            });
+            document.addEventListener('click', (event) => {
+                const isClickInsideChat = chatbox.contains(event.target) || 
+                                          chatDisplay.contains(event.target);
+                
+                if (body.classList.contains('chatbox-active') && !chatInput.value.trim() && !isClickInsideChat) {
+                    body.classList.remove('chatbox-active');
+                }
+            });
+            chatInput.addEventListener('blur', () => {
+                chatbox.classList.remove('focused');
+            });
+
+            // --- CHAT HELPER FUNCTIONS ---
+
+            // Helper to safely escape HTML
+            const escapeHTML = (str) => {
+                if (typeof str !== 'string') return '';
+                if (!str) return '';
+                return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+            }
+
+            // --- START OF FIX 1: Smarter message formatting ---
+            // This function now handles code blocks, markdown, and LaTeX backslashes
+            const formatAgentMessage = (message) => {
+                if (!message) return '';
+                
+                // 1. Find all code blocks and replace them with placeholders.
+                const placeholders = [];
+                let tempMessage = message.replace(/```([\s\S]*?)```/g, (match, code) => {
+                    const placeholder = `__CODE_BLOCK_${placeholders.length}__`;
+                    // Escape content inside code blocks
+                    placeholders.push(`<pre><code>${escapeHTML(code.trim())}</code></pre>`);
+                    return placeholder;
+                });
+
+                tempMessage = tempMessage.replace(/`([^`]+?)`/g, (match, code) => {
+                    const placeholder = `__CODE_BLOCK_${placeholders.length}__`;
+                    placeholders.push(`<code>${escapeHTML(code)}</code>`);
+                    return placeholder;
+                });
+
+                // 2. Escape the rest of the HTML *after* code blocks are removed.
+                let escapedMessage = escapeHTML(tempMessage);
+
+                // 3. Handle Markdown (Bold)
+                escapedMessage = escapedMessage.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                
+
+                // 4. (This step was removed as it caused over-escaping of LaTeX)
+
+                // 5. Re-insert code blocks
+                placeholders.forEach((placeholder, index) => {
+                    // Use a regex for replacement to avoid issues with special chars
+                    escapedMessage = escapedMessage.replace(new RegExp(`__CODE_BLOCK_${index}__`, 'g'), placeholder);
+                });
+                
+                return escapedMessage;
+            }
+            // --- END OF FIX 1 ---
+
+            // Helper to display the USER'S message
+            const displayMessage = (message, sender) => {
+                const container = document.createElement('div');
+                container.classList.add('message-container', `${sender}-message-container`);
+                const bubble = document.createElement('div');
+                bubble.classList.add('message-bubble', `${sender}-message-bubble`);
+                bubble.textContent = message;
+                container.appendChild(bubble);
+                chatDisplay.appendChild(container);
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            };
+
+            // --- MAIN AGENT COMMAND FUNCTION ---
+            // --- MAIN AGENT COMMAND FUNCTION ---
+            const handleSendCommand = async () => {
+                const command = chatInput.value.trim();
+                if (!command) return;
+
+                displayMessage(command, 'user');
+                chatInput.value = '';
+
+                // --- CREATE AI TURN ELEMENTS *FIRST* ---
+                const turnContainer = document.createElement('div');
+                turnContainer.classList.add('message-container', 'ai-message-container');
+                
+                const details = document.createElement('details');
+                details.classList.add('thought-dropdown');
+                const summary = document.createElement('summary');
+                // --- FIX: Set initial timer text immediately ---
+                summary.textContent = 'Agent is thinking... (0.0s)';
+                details.appendChild(summary);
+                turnContainer.appendChild(details); 
+
+                const aiBubble = document.createElement('div');
+                aiBubble.classList.add('message-bubble', 'ai-message-bubble');
+                aiBubble.style.display = 'none'; 
+                turnContainer.appendChild(aiBubble); 
+                
+                chatDisplay.appendChild(turnContainer);
+                chatDisplay.scrollTop = chatDisplay.scrollHeight; // Scroll down
+
+                // --- START TIMER *AFTER* elements are in the DOM ---
+                let timerInterval = null;
+                const startTime = Date.now();
+                timerInterval = setInterval(() => {
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    // --- FIX: Check if summary still exists before updating ---
+                    if (summary.parentNode) { // Check if it's still attached
+                       summary.textContent = `Agent is thinking... (${elapsed.toFixed(1)}s)`;
+                    } else {
+                       clearInterval(timerInterval); // Stop if element removed
+                       timerInterval = null;
+                    }
+                }, 100);
+                // --- END TIMER START ---
+
+
+                try {
+                    // --- 1. Call the /agent/invoke endpoint ---
+                    const response = await fetch('/agent/invoke', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ command: command })
+                    });
+
+                    if (!response.ok) {
+                         // --- FIX: Ensure timer stops on fetch error ---
+                        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                        summary.textContent = 'Error contacting agent'; // Update summary on error
+                        let errorMsg = `HTTP error! status: ${response.status}`;
+                        try {
+                           const errorData = await response.json();
+                           errorMsg = errorData.response || errorData.message || JSON.stringify(errorData);
+                        } catch(e) { /* Ignore */ }
+                        throw new Error(errorMsg);
+                    }
+                    
+                    // --- 3. READ THE STREAM AND BUILD THE UI ---
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let buffer = '';
+                    let fullMessageContent = ''; // For the final answer
+                    let responseStarted = false; // Flag to track if agent started responding
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) {
+                            // --- FIX: Ensure timer stops if stream ends before response ---
+                            if (timerInterval && !responseStarted) {
+                                clearInterval(timerInterval);
+                                timerInterval = null;
+                                summary.textContent = 'Agent finished thinking'; // Or a final state
+                            }
+                            break; 
+                        }
+                        buffer += decoder.decode(value, { stream: true });
+                        let lines = buffer.split('\n');
+                        buffer = lines.pop(); 
+
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const dataStr = line.substring(6);
+                                    if (!dataStr) continue;
+                                    const data = JSON.parse(dataStr);
+
+                                    // Check if this is the first non-thought chunk
+                                    if (data.type !== 'thought' && data.type !== 'tool_call' && data.type !== 'tool_output' && !responseStarted) {
+                                        responseStarted = true; // Mark response as started
+                                        // --- FIX: Stop timer when first actual response part arrives ---
+                                        if (timerInterval) {
+                                            clearInterval(timerInterval);
+                                            timerInterval = null;
+                                            // Keep the final time or change text
+                                            const finalElapsed = (Date.now() - startTime) / 1000;
+                                            summary.textContent = `Show thought process (${finalElapsed.toFixed(1)}s)`;
+                                            if (details.open) details.open = false; // Close details when response starts
+                                        }
+                                    }
+
+
+                                    if (data.type === 'thought' || data.type === 'tool_call' || data.type === 'tool_output') {
+                                        const stepDiv = document.createElement('div');
+                                        stepDiv.classList.add('thought-step');
+                                        stepDiv.innerHTML = formatAgentMessage(data.content);
+                                        details.appendChild(stepDiv);
+                                        // --- FIX: Only open details if timer is still running (keep closed otherwise) ---
+                                        if (timerInterval) details.open = true;
+                                    
+                                    } else if (data.type === 'token') {
+                                        // Timer is stopped above by responseStarted flag check
+                                        aiBubble.style.display = 'block'; 
+                                        
+                                        fullMessageContent += data.content;
+                                        let liveAnswerContent = fullMessageContent;
+                                        const lastThinkTagIndex = fullMessageContent.lastIndexOf('</think>');
+                                        if (lastThinkTagIndex !== -1) {
+                                            liveAnswerContent = fullMessageContent.substring(lastThinkTagIndex + 9).trim();
+                                        }
+                                        aiBubble.innerHTML = formatAgentMessage(liveAnswerContent);
+                                    
+                                    } else if (data.type === 'visualization') {
+                                        // Timer is stopped above by responseStarted flag check
+                                        aiBubble.style.display = 'block'; 
+
+                                        const chartId = `agent-chart-${Date.now()}`;
+                                        const canvas = document.createElement('canvas');
+                                        canvas.id = chartId;
+                                        // --- Increased default chart height ---
+                                        canvas.style.height = "800px"; // Force a specific, larger height
+                                        canvas.style.maxHeight = "800px"; // Keep maxHeight consistent// Use the larger size you set
+                                        aiBubble.innerHTML = ''; 
+                                        aiBubble.appendChild(canvas); 
+
+                                        const chartConfig = data.content;
+                                        new Chart(canvas.getContext('2d'), {
+                                            type: chartConfig.type,
+                                            data: chartConfig.data,
+                                            options: chartConfig.options
+                                        });
+
+                                    } else if (data.type === 'error') {
+                                         // Timer is stopped above by responseStarted flag check
+                                        aiBubble.style.display = 'block';
+                                        aiBubble.innerHTML = `Error: ${data.content}`;
+                                        aiBubble.style.color = 'red';
+                                    }
+                                    chatDisplay.scrollTop = chatDisplay.scrollHeight;
+                                } catch (e) {
+                                    // --- FIX: Stop timer on stream parsing error ---
+                                     if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                                     summary.textContent = 'Error processing response';
+                                    console.warn('Failed to parse stream data chunk:', line, e);
+                                }
+                            }
+                        }
+                    } // End while loop
+                    
+                    // --- 4. FINALIZE MESSAGE ---
+                     // --- FIX: Ensure timer is definitely stopped after loop ---
+                     if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                     
+                    // (Rest of the finalize logic remains the same...)
+                     if (fullMessageContent) {
+                        let thoughtContent = null;
+                        let answerContent = fullMessageContent;
+                        const lastThinkTagIndex = fullMessageContent.lastIndexOf('</think>');
+                        
+                        if (lastThinkTagIndex !== -1) {
+                            const firstThinkTagIndex = fullMessageContent.indexOf('<think>');
+                            let thoughtStartIndex = 0; 
+                            if (firstThinkTagIndex !== -1) {
+                                thoughtStartIndex = firstThinkTagIndex + 7; 
+                            }
+                            thoughtContent = fullMessageContent.substring(thoughtStartIndex, lastThinkTagIndex).trim();
+                            answerContent = fullMessageContent.substring(lastThinkTagIndex + 9).trim();
+                        }
+
+                        const streamedThoughts = details.querySelector('.thought-step');
+                        let hasThoughts = false;
+
+                        if (thoughtContent && thoughtContent.trim() && !streamedThoughts) {
+                            const stepDiv = document.createElement('div');
+                            stepDiv.classList.add('thought-step');
+                            stepDiv.innerHTML = formatAgentMessage(thoughtContent);
+                            details.appendChild(stepDiv);
+                            hasThoughts = true;
+                        } else if (streamedThoughts) {
+                            hasThoughts = true;
+                        }
+
+                        // --- FIX: Update summary text *after* final elapsed time if not already updated ---
+                        if (!responseStarted) {
+                            const finalElapsed = (Date.now() - startTime) / 1000;
+                            summary.textContent = `Show thought process (${finalElapsed.toFixed(1)}s)`;
+                        } else if (summary.textContent.startsWith('Agent is thinking')) {
+                             // Fallback if somehow responseStarted was missed
+                             summary.textContent = 'Show thought process';
+                        }
+
+
+                        details.style.display = ''; 
+
+                        if (!hasThoughts) {
+                            const noStepDiv = document.createElement('div');
+                            noStepDiv.classList.add('thought-step');
+                            noStepDiv.textContent = 'No thought process for this response.';
+                            details.appendChild(noStepDiv);
+                            details.open = false; 
+                        }
+
+                        const chartCanvas = aiBubble.querySelector('canvas');
+                        if (answerContent && answerContent.trim()) {
+                            aiBubble.style.display = 'block';
+                            if (chartCanvas) {
+                                const answerText = document.createElement('div');
+                                answerText.style.marginTop = '15px';
+                                answerText.innerHTML = formatAgentMessage(answerContent);
+                                aiBubble.appendChild(answerText);
+                            } else {
+                                aiBubble.innerHTML = formatAgentMessage(answerContent);
+                            }
+                        } else if (fullMessageContent && fullMessageContent.trim() && !chartCanvas) {
+                            aiBubble.style.display = 'block';
+                            aiBubble.innerHTML = formatAgentMessage(fullMessageContent);
+                        } else if (!hasThoughts && !chartCanvas) {
+                            aiBubble.style.display = 'block';
+                            aiBubble.innerHTML = "Sorry, I received an empty response.";
+                        } else if (!chartCanvas) {
+                            aiBubble.style.display = 'none';
+                        }
+
+                    } else if (!details.querySelector('.thought-step')) {
+                        turnContainer.remove();
+                        displayMessage("Sorry, I received an empty response.", 'ai');
+                    }
+                    if (window.MathJax) {
+                        setTimeout(() => {
+                            window.MathJax.typesetPromise([turnContainer]).catch((err) => console.error('MathJax typeset error:', err));
+                        }, 0); 
+                    }
+                    chatDisplay.scrollTop = chatDisplay.scrollHeight;
+
+                } catch (error) {
+                     // --- FIX: Ensure timer stops on main catch block error ---
+                     if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                     // Attempt to update summary even in error
+                     if(summary && summary.parentNode) summary.textContent = 'Error occurred';
+                    console.error('Error sending command:', error);
+                    // Display error in the existing bubble if possible, otherwise create new
+                    if(aiBubble && aiBubble.parentNode){
+                         aiBubble.style.display = 'block';
+                         aiBubble.innerHTML = `Error: ${error.message}`;
+                         aiBubble.style.color = 'red';
+                    } else {
+                         displayMessage(`Error: ${error.message}`, 'ai');
+                    }
+                }
+            }; // End handleSendCommand
+            
+            // --- ATTACH CHAT LISTENERS *AFTER* DEFINING FUNCTIONS ---
+            sendBtn.addEventListener('click', handleSendCommand);
+            chatInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    handleSendCommand();
+                }
+            });
+
+            
+            // --- DASHBOARD AND METRICS (Code remains the same) ---
+            const charts = {};
+            const chartDataStore = {};
+
+            const createChart = (canvasId, label, labels, data, borderColor = '#7C3AED', type = 'line') => {
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                if (charts[canvasId]) charts[canvasId].destroy();
+
+                const commonOptions = {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, backgroundColor: '#FFFFFF', titleColor: '#000000', bodyColor: '#000000', borderColor: 'rgba(0,0,0,0.1)', borderWidth: 1 } },
+                    scales: { x: { grid: { color: 'rgba(0, 0, 0, 0.05)' }, ticks: { color: '#000000' } }, y: { grid: { color: 'rgba(0, 0, 0, 0.05)' }, ticks: { color: '#000000' } } }
+                };
+
+                const datasetConfig = {
+                    label: label, data: data, borderColor: borderColor,
+                    backgroundColor: type === 'bar' ? borderColor : 'rgba(124, 58, 237, 0.1)',
+                    fill: type !== 'bar', tension: 0.4, pointBackgroundColor: borderColor,
+                    pointBorderColor: '#FFFFFF', pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#fff', pointHoverBorderColor: borderColor
+                };
+
+                charts[canvasId] = new Chart(ctx, { type: type, data: { labels: labels, datasets: [datasetConfig] }, options: commonOptions });
+            };
+
+
+            async function fetchDashboardData() {
+                try {
+                    const response = await fetch('/space/data', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch data: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+
+                    for (const key in data) {
+                         if (data.hasOwnProperty(key)) {
+                            const card = document.querySelector(`.metric-card[data-metric="${key}"]`);
+                            if (card) {
+                                card.querySelector('.metric-value').textContent = data[key].value;
+                                card.querySelector('.metric-comparison').textContent = data[key].comparison;
+                            }
+                            const chartId = `${key}Chart`;
+                             if (!chartDataStore[chartId]) {
+                                const cardLabel = card ? card.querySelector('h3').textContent : key;
+                                chartDataStore[chartId] = { labels: [], data: [], label: cardLabel, color: '#7C3AED' };
+                            }
+                            chartDataStore[chartId].labels = data[key].labels;
+                            chartDataStore[chartId].data = data[key].data;
+                        }
+                    }
+                    renderMetrics();
+
+                } catch (error) {
+                    console.error("Error fetching dashboard data:", error);
+                    const revenueCard = document.querySelector('.metric-card[data-metric="revenue"]');
+                    if(revenueCard) {
+                        revenueCard.querySelector('.metric-comparison').textContent = "Error loading data.";
+                    }
+                }
+            }
+            const initialLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+            const initialData = [0, 0, 0, 0, 0, 0];
+            const primaryColor = '#7C3AED';
+
+            chartDataStore.demoBookedRateChart = { labels: [...initialLabels], data: [...initialData], label: 'Demo Booked Rate', color: primaryColor };
+            chartDataStore.opportunityCreationChart = { labels: [...initialLabels], data: [...initialData], label: 'Opportunities', color: primaryColor };
+            chartDataStore.revenueChart = { labels: [...initialLabels], data: [...initialData], label: 'Revenue', color: primaryColor };
+            chartDataStore.closedWonChart = { labels: [...initialLabels], data: [...initialData], label: 'Deals Won', color: primaryColor };
+            chartDataStore.responseRateChart = { labels: [...initialLabels], data: [...initialData], label: 'Response Rate', color: primaryColor };
+            chartDataStore.openReplyRateChart = { labels: [...initialLabels], data: [...initialData], label: 'Open Rate', color: primaryColor };
+
+            fetchDashboardData();
+
+            const metricGrid = document.querySelector('.metrics-grid');
+            const allMetricCards = document.querySelectorAll('.metric-card');
+            const lockLayoutBtn = document.getElementById('lockLayoutBtn');
+            let layoutLocked = false;
+            let sortable = null;
+
+            allMetricCards.forEach(card => {
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('button') || layoutLocked) return;
+                    card.classList.toggle('expanded');
+                });
+            });
+
+            lockLayoutBtn.addEventListener('click', () => {
+                layoutLocked = !layoutLocked;
+                metricGrid.classList.toggle('layout-locked', layoutLocked);
+                lockLayoutBtn.classList.toggle('locked', layoutLocked);
+                lockLayoutBtn.textContent = layoutLocked ? 'Unlock Layout' : 'Lock Layout';
+                if (sortable) sortable.option('disabled', layoutLocked);
+            });
+
+            document.querySelectorAll('.metric-chart-controls button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const canvasId = button.dataset.chartId;
+                    const newType = button.dataset.chartType;
+                    const parentControls = button.parentElement;
+                    if(parentControls.querySelector('button.active')) parentControls.querySelector('button.active').classList.remove('active');
+                    button.classList.add('active');
+                    const chartInfo = chartDataStore[canvasId];
+                    if (chartInfo) {
+                       createChart(canvasId, chartInfo.label, chartInfo.labels, chartInfo.data, chartInfo.color, newType);
+                    } else {
+                       console.warn(`Chart data not found for ${canvasId}`);
+                    }
+                });
+            });
+
+            const manageMetricsBtn = document.getElementById('manageMetricsBtn');
+            const metricsModal = document.getElementById('metricsModal');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const metricsList = document.getElementById('metricsList');
+
+            const availableMetrics = [
+                { id: 'demoBookedRate', name: 'Demo Booked Rate' },
+                { id: 'opportunityCreation', name: 'Opportunities' },
+                { id: 'revenue', name: 'Revenue' },
+                { id: 'closedWon', name: 'Deals Won' },
+                { id: 'responseRate', name: 'Response Rate' },
+                { id: 'openReplyRate', name: 'Open/Reply Rate' }
+            ];
+
+            function getSavedMetrics() {
+                return JSON.parse(localStorage.getItem('userMetrics')) || ['revenue', 'closedWon', 'opportunityCreation'];
+            }
+
+
+            function saveMetrics(metricsToSave) {
+                localStorage.setItem('userMetrics', JSON.stringify(metricsToSave));
+            }
+
+            function renderMetrics() {
+                const selectedMetrics = getSavedMetrics();
+                allMetricCards.forEach(card => card.classList.toggle('hidden-metric', !selectedMetrics.includes(card.dataset.metric)));
+                Object.keys(chartDataStore).forEach(key => {
+                    const metricId = key.replace('Chart', '');
+                    if(selectedMetrics.includes(metricId)) {
+                        const info = chartDataStore[key];
+                        if (info) {
+                            const defaultActiveButton = document.querySelector(`.metric-card[data-metric="${metricId}"] .metric-chart-controls button.active`);
+                            const type = defaultActiveButton ? defaultActiveButton.dataset.chartType : 'line';
+                            createChart(key, info.label, info.labels, info.data, info.color, type);
+                        } else {
+                           console.warn(`Chart data not found during render for ${key}`);
+                        }
+                    }
+                });
+            }
+
+
+            function populateModal() {
+                metricsList.innerHTML = '';
+                const selectedMetrics = getSavedMetrics();
+                availableMetrics.forEach(metric => {
+                    const isChecked = selectedMetrics.includes(metric.id);
+                    metricsList.innerHTML += `
+                        <div class="metric-option">
+                            <input type="checkbox" id="metric-${metric.id}" data-metric-id="${metric.id}" ${isChecked ? 'checked' : ''}>
+                            <label for="metric-${metric.id}">${metric.name}</label>
+                        </div>`;
+                });
+                metricsList.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.addEventListener('change', () => {
+                    const currentlySelected = Array.from(metricsList.querySelectorAll('input:checked')).map(cb => cb.dataset.metricId);
+                    saveMetrics(currentlySelected);
+                    renderMetrics();
+                    applyMetricOrder();
+                }));
+            }
+
+
+            function getSavedMetricOrder() {
+                const defaultOrder = availableMetrics.map(m => m.id);
+                const savedOrder = JSON.parse(localStorage.getItem('userMetricsOrder'));
+                if (Array.isArray(savedOrder)) {
+                    const currentIds = new Set(savedOrder);
+                    defaultOrder.forEach(id => {
+                        if (!currentIds.has(id)) {
+                            savedOrder.push(id);
+                        }
+                    });
+                    return savedOrder;
+                }
+                return defaultOrder;
+            }
+
+            function saveMetricOrder(order) {
+                localStorage.setItem('userMetricsOrder', JSON.stringify(order));
+            }
+            function applyMetricOrder() {
+                const orderedIds = getSavedMetricOrder();
+                const cardMap = new Map();
+                metricGrid.querySelectorAll('.metric-card').forEach(card => cardMap.set(card.dataset.metric, card));
+                orderedIds.forEach(id => {
+                    const card = cardMap.get(id);
+                    if (card) metricGrid.appendChild(card);
+                });
+            }
+
+            function initializeSortable() {
+               if (sortable) sortable.destroy();
+               sortable = new Sortable(metricGrid, {
+                    animation: 150, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', dragClass: 'sortable-drag',
+                    filter: '.hidden-metric',
+                    preventOnFilter: true,
+                    onEnd: (evt) => {
+                        const newOrder = Array.from(evt.to.querySelectorAll('.metric-card:not(.hidden-metric)')).map(card => card.dataset.metric);
+                        const allKnownIds = availableMetrics.map(m => m.id);
+                        const hiddenIds = allKnownIds.filter(id => !newOrder.includes(id));
+                        saveMetricOrder([...newOrder, ...hiddenIds]);
+                    },
+                    disabled: layoutLocked
+                });
+            }
+
+
+            manageMetricsBtn.addEventListener('click', () => { populateModal(); metricsModal.classList.add('visible'); });
+            closeModalBtn.addEventListener('click', () => { metricsModal.classList.remove('visible'); });
+            window.addEventListener('click', (event) => { if (event.target === metricsModal) metricsModal.classList.remove('visible'); });
+
+            // --- Initial Setup ---
+            applyMetricOrder();
+            renderMetrics();
+            initializeSortable();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar - Sales OS powered by Theta</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js'></script>
+    <style>
+        /* DESIGN PRINCIPLES APPLIED:
+ * Primary Accent: #7C3AED (Deep Purple)
+ * Base Background: linear-gradient(135deg, #EAD9FF 0%, #FBE8F3 100%)
+ * Glass Panels: rgba(255, 255, 255, 0.45) with blur(24px)
+ * Soft Borders: rgba(0, 0, 0, 0.1)
+ * Text Primary: #000000 (Dark Slate)
+ * Text Secondary: #000000 (Medium Slate)
+ * Typography: Inter
+*/
+
+/* General Reset and Box Sizing */
+html { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: inherit; transition: all 0.3s ease; }
+
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    background: linear-gradient(135deg, #EAD9FF 0%, #FBE8F3 100%);
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    color: #000000;
+}
+
+/* Scrollbar for Light Theme */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+
+/* Sidebar */
+.sidebar {
+    position: fixed; left: 0; top: 0; width: 220px; height: 100vh;
+    background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    display: flex; flex-direction: column; z-index: 100; border-right: 1px solid rgba(0, 0, 0, 0.1);
+    transition: left 0.3s ease;
+}
+.sidebar.hidden { left: -220px; }
+.sidebar-header { display: flex; align-items: center; padding: 20px; border-bottom: 1px solid rgba(0, 0, 0, 0.1); }
+.logo-img { max-width: 120px; height: auto; cursor: pointer; transition: opacity 0.3s ease; }
+.logo-img:hover { opacity: 0.8; }
+.nav { flex: 1; padding: 15px; overflow-y: auto; }
+.nav ul { list-style: none; padding: 0; margin: 0; }
+.nav li { margin: 5px 0; cursor: pointer; position: relative; }
+.nav a { text-decoration: none; color: inherit; }
+.nav-item { padding: 12px 15px; display: flex; align-items: center; gap: 15px; border-radius: 16px; color: #000000; }
+.nav li:hover .nav-item { background: rgba(0, 0, 0, 0.05); color: #000000; }
+.nav li.active .nav-item { background: #7C3AED; color: #FFFFFF; font-weight: 600; }
+.nav li.active .nav-item::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 60%; width: 4px; background-color: #FFFFFF; border-radius: 0 4px 4px 0; }
+.nav li.active .nav-item svg { fill: #FFFFFF; }
+.nav svg { width: 20px; height: 20px; fill: #000000; }
+.nav li:hover .nav-item svg { fill: #000000; }
+.nav .dropdown-arrow { position: absolute; right: 15px; transition: transform 0.2s ease; }
+.nav li.open .dropdown-arrow { transform: rotate(180deg); }
+.submenu {
+    list-style: none; padding: 5px 0 5px 35px; margin: 0; max-height: 0; overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+}
+.submenu a { font-size: 0.9em; color: #000000; }
+.nav li.open > .submenu { max-height: 200px; }
+.submenu li { padding: 8px 15px; border-radius: 12px; }
+.submenu li:hover { background: rgba(0, 0, 0, 0.05); }
+.submenu li:hover a { color: #000000; }
+.submenu li.active a { color: #7C3AED; font-weight: 500; }
+
+.bottom-section { padding: 15px; border-top: 1px solid rgba(0, 0, 0, 0.1); margin-top: auto; }
+.profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px; border-radius: 16px; margin-bottom: 10px; }
+.profile:hover { background: rgba(0, 0, 0, 0.05); }
+.profile-icon-container { width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.profile-icon { width: 24px; height: 24px; fill: #000000; }
+.profile-icon-img { width: 100%; height: 100%; object-fit: cover; }
+.profile-name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; color: #000000; }
+.footer-links { list-style: none; padding: 0; margin: 0; }
+.footer-links li { padding: 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; border-radius: 12px; color: #000000; }
+.footer-links li:hover { color: #7C3AED; background: rgba(0, 0, 0, 0.05); }
+.footer-links li:hover svg { fill: #7C3AED; }
+.footer-links svg { width: 18px; height: 18px; fill: #000000; }
+.toggle-btn { 
+    width: 36px; height: 36px; background: rgba(255, 255, 255, 0.5); 
+    backdrop-filter: blur(10px); border-radius: 12px; 
+    display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    cursor: pointer; z-index: 101; position: fixed; top: 20px; left: 240px; 
+    border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.3s ease;
+}
+.toggle-btn:hover { background: rgba(255, 255, 255, 0.7); }
+.toggle-btn span { display: block; width: 20px; height: 2px; background: #000000; margin: 2px 0; transition: all 0.3s ease; }
+.sidebar.hidden ~ .toggle-btn { left: 20px; }
+
+.main-container { 
+    flex: 1; margin-left: 220px; display: flex; height: 100vh; overflow: hidden; 
+    transition: margin-left 0.3s ease;
+}
+.sidebar.hidden ~ .main-container { margin-left: 0; }
+
+.calendar-main { flex: 1; padding: 40px; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+.calendar-main header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.calendar-main header h1 { font-size: 2em; font-weight: 600; margin: 0; color: #000000; }
+.calendar-main header p { margin-top: 5px; color: #000000; }
+
+.schedule-btn {
+    background: #7C3AED; color: #FFFFFF; border: none;
+    padding: 12px 24px; border-radius: 16px; cursor: pointer; font-weight: 600; font-size: 1em;
+    display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(124, 58, 237, 0.2);
+}
+.schedule-btn:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(124, 58, 237, 0.3); }
+.schedule-btn svg { fill: #FFFFFF; width: 18px; height: 18px; }
+
+.calendar-wrapper {
+    background: rgba(255, 255, 255, 0.45); border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 24px; backdrop-filter: blur(24px); flex: 1; min-height: 0; overflow: hidden;
+    padding: 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.agenda-sidebar {
+    width: 380px; flex-shrink: 0; border-left: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex; flex-direction: column; background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(30px); padding: 25px 30px; overflow-y: auto;
+}
+
+.clock-display {
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+#clock-time {
+    font-size: 3em;
+    font-weight: 700;
+    color: #000000;
+    line-height: 1;
+}
+#clock-date {
+    font-size: 1em;
+    color: #000000;
+}
+
+.theta-scheduler { margin-bottom: 25px; }
+.theta-scheduler h3 { font-size: 1.1em; font-weight: 500; margin: 0 0 15px; color: #000000; display: flex; align-items: center; gap: 8px;}
+.theta-scheduler svg { width: 20px; height: 20px; color: #7C3AED; }
+.theta-input-wrapper { position: relative; }
+.theta-input-wrapper input {
+    width: 100%; padding: 12px 15px; padding-right: 40px; background: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 16px;
+    color: #000000; outline: none;
+}
+.theta-input-wrapper input:focus { border-color: #7C3AED; box-shadow: 0 0 15px rgba(124, 58, 237, 0.2); }
+.theta-input-wrapper input::placeholder { color: rgba(0, 0, 0, 0.5); } 
+.theta-input-wrapper button { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: #7C3AED; border: none; border-radius: 12px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer;}
+.theta-input-wrapper button svg { width: 18px; height: 18px; color: #FFFFFF; }
+
+.meeting-prep-section { margin-bottom: 25px; }
+.meeting-prep-section h3 { font-size: 1.1em; font-weight: 500; margin: 0 0 15px; color: #000000; }
+.prep-automation-toggle {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
+    padding: 10px; background: rgba(255,255,255,0.3); border-radius: 12px;
+}
+.toggle-switch { position: relative; width: 50px; height: 24px; background: rgba(0,0,0,0.2); border-radius: 12px; cursor: pointer; }
+.toggle-switch.active { background: #7C3AED; }
+.toggle-switch .slider { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.3s; }
+.toggle-switch.active .slider { transform: translateX(26px); }
+.prep-checklist { list-style: none; padding: 0; margin: 0; }
+.prep-checklist li { padding: 8px 0; display: flex; align-items: center; gap: 10px; font-size: 0.9em; }
+.prep-checklist li .status-icon { width: 16px; height: 16px; border-radius: 50%; }
+.prep-checklist li .status-icon.pending { background: #f59e0b; }
+.prep-checklist li .status-icon.completed { background: #10b981; }
+.prep-checklist li .status-icon.failed { background: #ef4444; }
+
+.upcoming-section { margin-bottom: 25px; }
+.upcoming-section h3 { font-size: 1.1em; font-weight: 500; margin: 0 0 15px; color: #000000; }
+.upcoming-item { display: flex; gap: 15px; margin-bottom: 15px; cursor: pointer; padding: 5px; border-radius: 8px;}
+.upcoming-item:hover { background-color: rgba(0,0,0,0.05); }
+.upcoming-time { font-weight: 500; color: #000000; width: 60px; }
+.upcoming-details { border-left: 2px solid #7C3AED; padding-left: 15px; }
+.upcoming-details h4 { margin: 0 0 4px; font-weight: 500; color: #000000; }
+.upcoming-details p { margin: 0; font-size: 0.9em; color: #000000; }
+.upcoming-section p { color: #000000 !important; opacity: 0.7;}
+
+:root { --fc-border-color: rgba(0, 0, 0, 0.1); --fc-today-bg-color: rgba(124, 58, 237, 0.1); }
+.fc { height: 100%; }
+.fc .fc-toolbar-title { font-size: 1.5em; font-weight: 600; color: #000000; }
+.fc .fc-button-primary { background: rgba(0, 0, 0, 0.05) !important; color: #000000 !important; border: 1px solid rgba(0, 0, 0, 0.1) !important; font-weight: 500; }
+.fc .fc-button-primary:hover { background: rgba(0, 0, 0, 0.1) !important; }
+.fc .fc-button-primary:active, .fc .fc-button-primary:focus { box-shadow: none !important; }
+.fc .fc-button-primary.fc-button-active { background: #7C3AED !important; color: #FFFFFF !important; border-color: #7C3AED !important; }
+.fc-daygrid-day-number { color: #000000; }
+.fc-col-header-cell-cushion { color: #000000; text-decoration: none; }
+.fc-day-today .fc-daygrid-day-number { font-weight: 600; color: #7C3AED; }
+.fc-event { border-radius: 8px; border-width: 2px !important; font-weight: 500; cursor: pointer; }
+.fc-event-main { padding: 4px 8px; }
+.fc-event-time { font-weight: 600; }
+.fc-h-event { 
+    background-color: #7C3AED;
+    border-color: #5C2D9C !important; 
+    color: #FFFFFF;
+}
+.fc-event-main-frame { color: #FFFFFF; }
+
+.modal-overlay {
+    position: fixed !important; 
+    top: 0 !important; 
+    left: 0 !important; 
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important; 
+    height: 100vh !important; 
+    background: rgba(0, 0, 0, 0.4);
+    display: none; 
+    z-index: 10000; 
+    backdrop-filter: blur(15px);
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.modal-overlay.visible { 
+    display: flex !important; 
+    justify-content: center !important; 
+    align-items: center !important; 
+    place-items: center !important;
+    place-content: center !important;
+}
+.modal-content {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 0; border-radius: 24px; 
+    width: 90%; max-width: 650px; max-height: 90vh; 
+    display: flex; flex-direction: column;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2); border: 1px solid rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease-in-out; backdrop-filter: blur(30px);
+    color: #000000;
+    margin: 0 !important;
+    transform: none !important;
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; border-bottom: 1px solid rgba(0, 0, 0, 0.1); }
+.modal-header h2 { margin: 0; font-size: 1.5em; font-weight: 600; }
+.close-btn { background: none; border: none; color: #000000; font-size: 2em; cursor: pointer; line-height: 1; }
+.close-btn:hover { color: #7C3AED; }
+.modal-body { padding: 25px 30px; overflow-y: auto; flex-grow: 1; }
+.form-group { margin-bottom: 18px; position: relative; }
+.form-group label { display: block; color: #000000; margin-bottom: 6px; font-size: 0.9em; }
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 12px 15px; background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 16px; color: #000000;
+    font-size: 1em; outline: none; font-family: 'Inter', sans-serif; 
+    backdrop-filter: blur(10px); transition: all 0.3s ease;
+}
+.form-group input::placeholder, .form-group textarea::placeholder { color: rgba(0, 0, 0, 0.5); }
+.form-group textarea { resize: vertical; min-height: 80px; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #7C3AED; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.checkbox-group { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(0, 0, 0, 0.05); border-radius: 12px; }
+.checkbox-group input { width: auto; }
+.modal-footer { 
+    padding: 20px 30px; border-top: 1px solid rgba(0, 0, 0, 0.1); 
+    display: flex; justify-content: flex-end; align-items: center; gap: 15px; 
+    flex-shrink: 0;
+}
+
+.integration-modal { max-width: 800px; }
+.integration-tab { display: none; }
+.integration-tab.active { display: block; }
+.tab-nav { display: flex; gap: 5px; margin-bottom: 20px; }
+.tab-btn { padding: 10px 20px; border: none; background: rgba(0,0,0,0.05); border-radius: 12px; cursor: pointer; }
+.tab-btn.active { background: #7C3AED; color: white; }
+.oauth-section { padding: 20px; background: rgba(124, 58, 237, 0.05); border-radius: 16px; margin-bottom: 20px; }
+.sync-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+.ghost-button { 
+    background-color: transparent; border: 1px solid rgba(0, 0, 0, 0.2); 
+    color: #000000; padding: 10px 20px; border-radius: 12px; cursor: pointer; 
+    font-weight: 500; transition: all 0.3s ease;
+}
+.ghost-button:hover { border-color: #7C3AED; color: #7C3AED; transform: translateY(-1px); }
+#delete-event-btn { color: #dc2626 !important; border-color: #dc2626 !important; }
+#delete-event-btn:hover { background-color: rgba(220, 38, 38, 0.1); transform: translateY(-1px); }
+.accent-button { 
+    background: #7C3AED; color: #FFFFFF; border: none; padding: 10px 20px; 
+    border-radius: 12px; cursor: pointer; font-weight: 600; 
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3); transition: all 0.3s ease;
+}
+.accent-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4); }
+
+.event-details-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+.event-details-main { border-right: 1px solid rgba(0, 0, 0, 0.1); padding-right: 20px; }
+.detail-item { margin-bottom: 15px; }
+.detail-item strong { display: block; color: #000000; font-size: 0.9em; margin-bottom: 4px; }
+.detail-item p, .detail-item a { margin: 0; color: #000000; display: flex; align-items: center; gap: 8px; word-break: break-all; text-decoration: none; }
+.detail-item a:hover { color: #7C3AED; }
+.detail-item svg { width: 16px; height: 16px; color: #000000; flex-shrink: 0; }
+
+.ai-briefing {
+    background: rgba(124, 58, 237, 0.05);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+    padding: 20px;
+    border-radius: 16px;
+}
+.ai-briefing h3 { margin: 0 0 15px; font-size: 1.1em; color: #7C3AED; display: flex; align-items: center; gap: 8px; }
+.ai-briefing-item { margin-bottom: 12px; }
+.ai-briefing-item strong { display: block; color: #000000; font-size: 0.9em; margin-bottom: 4px; }
+.ai-briefing-item p { margin: 0; font-size: 0.9em; color: #000000; line-height: 1.6; }
+.document-references { margin-top: 15px; }
+.doc-ref { display: inline-block; padding: 4px 8px; background: rgba(124, 58, 237, 0.1); border-radius: 8px; margin: 2px; font-size: 0.8em; }
+
+.loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    display: none; justify-content: center; align-items: center;
+    z-index: 9999;
+}
+.loading-overlay.visible { display: flex; }
+.spinner {
+    width: 50px; height: 50px; border: 4px solid rgba(0, 0, 0, 0.2);
+    border-top-color: #7C3AED; border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.crm-search-results {
+    position: absolute; width: 100%; background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1); border-top: none;
+    border-radius: 0 0 16px 16px; max-height: 150px; overflow-y: auto;
+    z-index: 10; display: none;
+}
+.crm-search-results div { padding: 10px 15px; cursor: pointer; color: #000000; }
+.crm-search-results div:hover { background-color: rgba(0, 0, 0, 0.05); color: #000000; }
+
+#toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+.toast {
+    padding: 15px 20px; border-radius: 16px; color: #FFFFFF; font-weight: 600;
+    background: #7C3AED;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px); opacity: 0; transform: translateY(100%); min-width: 250px;
+}
+.toast.error { background: #dc2626; color: #fff; }
+.toast.show { opacity: 1; transform: translateY(0); }
+
+@media(max-width: 1200px) { .agenda-sidebar { display: none; } }
+@media(max-width: 768px) { .sidebar { left: -220px; } .sidebar.active { left: 0; } .main-container { margin-left: 0; } .toggle-btn { left: 20px; } .calendar-main { padding: 20px; } .form-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div></div>
+    <div id="toast-container"></div>
+    <div class="toggle-btn" id="toggleBtn"><span></span><span></span><span></span></div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img class="logo-img" src="/static/logo.png" alt="Sales OS Logo" onerror="this.onerror=null;this.src='https://placehold.co/120x40/050507/7C3AED?text=SalesOS&font=inter';">
+        </div>
+        <div class="nav">
+            <ul>
+                <li><a href="/space"><div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>Space</div></a></li>
+                <li id="crmMenu">
+                    <div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 13h6v-2H4v2zm0 4h6v-2H4v2zm0-8h6V7H4v2zm8 2h9V7h-9v2zm0 4h9v-2h-9v2zm0 4h9v-2h-9v2z"/></svg>MIni-Crm<svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div>
+                    <ul class="submenu"><li><a href="/mini-crm/leads">Leads</a></li><li><a href="/mini-crm/deals">Deals</a></li><li><a href="/mini-crm/sales-funnel">Sales Funnel</a></li></ul>
+                </li>
+                <li class = "active"><a href="/calendar"><div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>Calendar</div></a></li>
+
+                <li id="salesMenu">
+                    <div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zM10 4h4v2h-4V4zm10 15H4V8h16v11z"/></svg>Sales<svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div>
+                    <ul class="submenu">
+                        <li><a href="/sales/pre-sales">Pre-Sales</a></li>
+                        <li><a href="/sales/post-sales">Post-Sales</a></li>
+                    </ul>
+                </li>
+                <li><div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm0-4c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm0-4c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm-4 4c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm8 0c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2z"/></svg>Agent Connect</div></li>
+            </ul>
+        </div>
+        
+        <div class="bottom-section">
+            <div class="profile">
+                <div class="profile-icon-container">
+                    <img id="profile-img" src="" alt="User Profile" class="profile-icon-img hidden" onerror="this.classList.add('hidden'); document.getElementById('default-profile-icon').classList.remove('hidden');">
+                    <svg id="default-profile-icon" class="profile-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </div>
+                <span class="profile-name" id="profile-name"></span>
+            </div>
+
+            <ul class="footer-links">
+                <li id="settings-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.08-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.08.49 0 .61.22l2-3.46c.12-.22.07.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+                    </svg>
+                    Settings
+                </li>
+                <li id="logout-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 13v-2H7v-2h9V7l5 4l-5 4zm-5 6h9V4h-9v3H9V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-3h2v3z"/>
+                    </svg>
+                    Log Out
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <main class="calendar-main">
+            <header>
+                <div>
+                    <h1>Your Calendar</h1>
+                    <p>The daily sales cockpit for meetings, tasks, and AI briefings.</p>
+                </div>
+                <button class="schedule-btn" id="schedule-event-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                    Schedule Event
+                </button>
+            </header>
+
+            <div class="calendar-wrapper">
+                <div id="calendar"></div>
+            </div>
+        </main>
+
+        
+    </div>
+
+    <div id="event-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="event-modal-title">Schedule Event</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <form id="event-form">
+                <div class="modal-body">
+                    <input type="hidden" id="event-id">
+                    <input type="hidden" id="event-lead-id">
+                    <div class="form-group">
+                        <label for="event-title">Title</label>
+                        <input type="text" id="event-title" required>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="event-start-date">Start Date & Time</label>
+                            <input type="datetime-local" id="event-start-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="event-end-date">End Date & Time</label>
+                            <input type="datetime-local" id="event-end-date" required>
+                        </div>
+                    </div>
+                     <div class="form-group">
+                        <label for="event-attendees">Attendees (comma-separated emails)</label>
+                        <textarea id="event-attendees" placeholder="e.g., colleague@example.com, client@example.com"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-crm-link">Link to Lead/Deal (Optional)</label>
+                        <input type="text" id="event-crm-link" placeholder="Search for a contact or deal..." autocomplete="off">
+                        <div class="crm-search-results" id="crm-search-results"></div>
+                    </div>
+                     <div class="checkbox-group">
+                        <input type="checkbox" id="create-meeting-link">
+                        <label for="create-meeting-link">Create online meeting link (requires primary meeting app)</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="ghost-button" id="delete-event-btn" style="display: none; margin-right: auto; color: #dc2626; border-color: #dc2626;">Delete</button>
+                    <button type="button" class="ghost-button cancel-btn">Cancel</button>
+                    <button type="submit" class="accent-button">Save Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="details-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 850px;">
+            <div class="modal-header">
+                <h2 id="details-modal-title">Event Details</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="event-details-grid">
+                    <div class="event-details-main">
+                        <div class="detail-item"><strong>Time</strong><p id="details-time"></p></div>
+                        <div class="detail-item"><strong>Linked Record</strong><p id="details-crm-link"></p></div>
+                        <div class="detail-item"><strong>Attendees</strong><p id="details-attendees"></p></div>
+                        <div class="detail-item" id="details-meeting-link-item" style="display: none;">
+                            <strong>Meeting Link</strong>
+                            <a id="details-meeting-link" href="#" target="_blank">
+                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd" /></svg>
+                                Join Online Meeting
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ai-briefing">
+                        <h3><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.562L16.25 22.5l-.648-1.938a3.375 3.375 0 00-2.685-2.685L11.25 18l1.938-.648a3.375 3.375 0 002.685-2.685L16.25 13.5l.648 1.938a3.375 3.375 0 002.685 2.685L21.75 18l-1.938.648a3.375 3.375 0 00-2.685 2.685z" /></svg>AI Pre-Meeting Briefing</h3>
+                        <div id="ai-briefing-content"></div>
+                        <div class="document-references" id="document-references"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="ghost-button cancel-btn">Close</button>
+                <button type="button" class="accent-button" id="edit-event-btn">Edit Event</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="integration-modal" class="modal-overlay">
+        <div class="modal-content integration-modal">
+            <div class="modal-header">
+                <h2>Calendar Integration Settings</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="tab-nav">
+                    <button class="tab-btn active" data-tab="google">Google Calendar</button>
+                    <button class="tab-btn" data-tab="outlook">Outlook Calendar</button>
+                    <button class="tab-btn" data-tab="sync">Sync Settings</button>
+                </div>
+                
+                <div id="google-tab" class="integration-tab active">
+                    <div class="oauth-section">
+                        <h4>🔐 Google Calendar Authorization</h4>
+                        <p>Connect your Google Calendar to enable bi-directional sync.</p>
+                        <button class="accent-button" id="google-oauth-btn">Authorize Google Calendar</button>
+                        <div id="google-auth-status"></div>
+                    </div>
+                </div>
+                
+                <div id="outlook-tab" class="integration-tab">
+                    <div class="oauth-section">
+                        <h4>🔐 Outlook Calendar Authorization</h4>
+                        <p>Connect your Outlook Calendar to enable bi-directional sync.</p>
+                        <button class="accent-button" id="outlook-oauth-btn">Authorize Outlook Calendar</button>
+                        <div id="outlook-auth-status"></div>
+                    </div>
+                </div>
+                
+                <div id="sync-tab" class="integration-tab">
+                    <div class="sync-settings">
+                        <div class="form-group">
+                            <label>Sync Frequency</label>
+                            <select id="sync-frequency">
+                                <option value="5">Every 5 minutes</option>
+                                <option value="15" selected>Every 15 minutes</option>
+                                <option value="60">Every hour</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Sync Direction</label>
+                            <select id="sync-direction">
+                                <option value="both" selected>Bi-directional</option>
+                                <option value="import">Import only</option>
+                                <option value="export">Export only</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="ghost-button cancel-btn">Cancel</button>
+                <button type="button" class="accent-button" id="save-integration-settings">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // AUTHENTICATION & USER MANAGEMENT
+            function parseJwt(token) {
+                try {
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    return JSON.parse(jsonPayload);
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            const token = localStorage.getItem('jwt_token');
+            const decodedToken = parseJwt(token);
+
+            if (!decodedToken || decodedToken.exp * 1000 < Date.now()) {
+                localStorage.removeItem('jwt_token');
+                window.location.href = '/auth';
+                return;
+            }
+
+            const userName = decodedToken.name || 'User';
+            document.getElementById('profile-name').textContent = userName;
+
+            // GLOBAL VARIABLES
+            let calendar;
+            let allLeadsCache = [];
+            let currentEventForEdit = null;
+            // Removed meeting prep automation UI; flags disabled
+            let meetingPrepAutomation = false;
+            let prepCheckInterval = null;
+            
+            // MCP INTEGRATION STATUS
+            let mcpStatus = {
+                gmail: false,
+                meet: false
+            };
+
+            // UI UTILITY FUNCTIONS
+            function showToast(message, isError = false) {
+                const toast = document.createElement('div');
+                toast.className = 'toast' + (isError ? ' error' : '');
+                toast.textContent = message;
+                document.getElementById('toast-container').appendChild(toast);
+                setTimeout(() => toast.classList.add('show'), 10);
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000);
+            }
+
+            function showLoading() {
+                document.getElementById('loading-overlay').classList.add('visible');
+            }
+
+            function hideLoading() {
+                document.getElementById('loading-overlay').classList.remove('visible');
+            }
+
+            async function apiRequest(endpoint, method = 'GET', body = null, showOverlay = true) {
+                if (showOverlay) showLoading();
+                try {
+                    const options = {
+                        method,
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    };
+                    if (body) options.body = JSON.stringify(body);
+                    
+                    const response = await fetch(endpoint, options);
+                    const responseData = response.status !== 204 ? await response.json() : null;
+                    
+                    if (!response.ok) {
+                        throw new Error(responseData?.message || `HTTP error! status: ${response.status}`);
+                    }
+                    return responseData;
+                } finally {
+                    if (showOverlay) hideLoading();
+                }
+            }
+
+            function openModal(modalId) {
+                document.getElementById(modalId).classList.add('visible');
+            }
+
+            function closeModal(modalId) {
+                document.getElementById(modalId).classList.remove('visible');
+            }
+
+            function updateClock() {
+                const now = new Date();
+                const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+                const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const clockTimeEl = document.getElementById('clock-time');
+                const clockDateEl = document.getElementById('clock-date');
+                if (clockTimeEl) clockTimeEl.textContent = now.toLocaleTimeString('en-US', timeOptions);
+                if (clockDateEl) clockDateEl.textContent = now.toLocaleDateString('en-US', dateOptions);
+            }
+
+            // MCP INTEGRATION FUNCTIONS
+            async function initializeMCP() {
+                try {
+                    // Silently check Gmail MCP status
+                    try {
+                        const gmailStatus = await apiRequest('/mcp/gmail/status', 'GET', null, false);
+                        mcpStatus.gmail = gmailStatus?.connected || false;
+                    } catch (error) {
+                        mcpStatus.gmail = false;
+                    }
+                    
+                    // Silently check Meet MCP status  
+                    try {
+                        const meetStatus = await apiRequest('/mcp/meet/status', 'GET', null, false);
+                        mcpStatus.meet = meetStatus?.connected || false;
+                    } catch (error) {
+                        mcpStatus.meet = false;
+                    }
+                    
+                    // No UI notifications - keep it blackbox
+                } catch (error) {
+                    // Silently handle MCP unavailability
+                    mcpStatus.gmail = false;
+                    mcpStatus.meet = false;
+                }
+            }
+
+            async function createMeetingWithMCP(eventData) {
+                try {
+                    // Create meeting via Meet MCP
+                    const meetingRequest = {
+                        title: eventData.title,
+                        start_time: eventData.start,
+                        end_time: eventData.end,
+                        attendees: eventData.extendedProps?.attendees || []
+                    };
+                    
+                    const meetingResponse = await apiRequest('/mcp/meet/create', 'POST', meetingRequest, false);
+                    
+                    if (meetingResponse?.meeting_link) {
+                        eventData.extendedProps = eventData.extendedProps || {};
+                        eventData.extendedProps.meetingLink = meetingResponse.meeting_link;
+                        eventData.extendedProps.meetingId = meetingResponse.meeting_id;
+                        
+                        // Send calendar invites via Gmail MCP
+                        if (mcpStatus.gmail && eventData.extendedProps.attendees?.length > 0) {
+                            await sendCalendarInvites(eventData);
+                        }
+                    }
+                    
+                    return eventData;
+                } catch (error) {
+                    console.error('MCP meeting creation failed:', error);
+                    throw error;
+                }
+            }
+
+            async function sendCalendarInvites(eventData) {
+                try {
+                    const inviteRequest = {
+                        to: eventData.extendedProps.attendees,
+                        subject: `Meeting Invitation: ${eventData.title}`,
+                        event_details: {
+                            title: eventData.title,
+                            start_time: eventData.start,
+                            end_time: eventData.end,
+                            meeting_link: eventData.extendedProps.meetingLink,
+                            location: eventData.extendedProps.meetingLink ? 'Online Meeting' : 'TBD'
+                        }
+                    };
+                    
+                    await apiRequest('/mcp/gmail/send_invite', 'POST', inviteRequest, false);
+                    showToast('📧 Calendar invites sent successfully');
+                } catch (error) {
+                    console.error('Failed to send calendar invites:', error);
+                    showToast('⚠️ Meeting created but invites failed to send', true);
+                }
+            }
+
+            // MEETING PREPARATION AUTOMATION
+            // Meeting prep automation UI and logic removed
+
+            // AI BRIEFING GENERATION
+            async function generateAdvancedMeetingBriefing(eventId, leadId) {
+                if (!leadId) {
+                    document.getElementById('ai-briefing-content').innerHTML = 
+                        '<p>No CRM record linked. Connect this meeting to a lead for AI insights.</p>';
+                    return;
+                }
+
+                try {
+                    document.getElementById('ai-briefing-content').innerHTML = 
+                        '<div class="ai-briefing-item"><p>🔄 Generating comprehensive AI briefing...</p></div>';
+
+                    const briefing = await apiRequest(`/leads/${leadId}/generate_briefing`, 'POST', {}, false);
+                    
+                    document.getElementById('ai-briefing-content').innerHTML = `
+                        <div class="ai-briefing-item">
+                            <strong>📊 Key Insights</strong>
+                            <p>${briefing.insight || 'No specific insights available.'}</p>
+                        </div>
+                        <div class="ai-briefing-item">
+                            <strong>🎯 Recommended Actions</strong>
+                            <p>${briefing.next_best_action || 'Standard discovery approach recommended.'}</p>
+                        </div>
+                        <div class="ai-briefing-item">
+                            <strong>📈 Opportunity Assessment</strong>
+                            <p>${briefing.opportunity_assessment || 'Medium confidence - Continue nurturing relationship'}</p>
+                        </div>
+                        <div class="ai-briefing-item">
+                            <strong>💬 Conversation Starters</strong>
+                            <p>${briefing.conversation_starters || 'Start with standard discovery questions.'}</p>
+                        </div>
+                        <div class="ai-briefing-item">
+                            <strong>⚠️ Key Challenges</strong>
+                            <p>${briefing.key_challenges || 'Standard objection handling may be needed.'}</p>
+                        </div>
+                        <div class="ai-briefing-item">
+                            <strong>🎯 Meeting Objectives</strong>
+                            <p>${briefing.meeting_objectives || 'Build rapport and identify next steps.'}</p>
+                        </div>
+                    `;
+                    
+                } catch (error) {
+                    document.getElementById('ai-briefing-content').innerHTML = 
+                        `<p>⚠️ Error generating briefing: ${error.message}</p>`;
+                }
+            }
+
+            // THETA AI SCHEDULER
+            // Theta quick-scheduler UI removed
+
+            // FULLCALENDAR INITIALIZATION
+            function initializeCalendar() {
+                calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+                    initialView: 'timeGridWeek',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    },
+                    events: async (fetchInfo, successCallback, failureCallback) => {
+                        try {
+                            const events = await apiRequest('/calendar/events', 'GET', null, false);
+                            console.log('📅 Fetched events from API:', events);
+                            console.log('📊 Number of events:', events.length);
+                            if (events.length > 0) {
+                                console.log('📝 First event sample:', JSON.stringify(events[0], null, 2));
+                            }
+                            successCallback(events);
+                        } catch (error) {
+                            console.error('❌ Failed to fetch events:', error);
+                            failureCallback(error);
+                        }
+                    },
+                    eventClick: (info) => {
+                        showEventDetails(info.event);
+                    },
+                    dateClick: (info) => {
+                        createNewEvent(info.dateStr);
+                    },
+                    editable: true,
+                    selectable: true,
+                    businessHours: {
+                        daysOfWeek: [1, 2, 3, 4, 5],
+                        startTime: '09:00',
+                        endTime: '17:00'
+                    },
+                    eventDrop: async (info) => {
+                        try {
+                            await apiRequest(`/calendar/events/${info.event.id}`, 'PUT', {
+                                title: info.event.title,
+                                start: info.event.start.toISOString(),
+                                end: info.event.end ? info.event.end.toISOString() : info.event.start.toISOString(),
+                                extendedProps: info.event.extendedProps
+                            }, false);
+                            showToast('✅ Event updated');
+                            calendar.refetchEvents();
+                        } catch (error) {
+                            showToast('❌ Failed to update event', true);
+                            info.revert();
+                        }
+                    },
+                    eventResize: async (info) => {
+                        try {
+                            await apiRequest(`/calendar/events/${info.event.id}`, 'PUT', {
+                                title: info.event.title,
+                                start: info.event.start.toISOString(),
+                                end: info.event.end ? info.event.end.toISOString() : info.event.start.toISOString(),
+                                extendedProps: info.event.extendedProps
+                            }, false);
+                            showToast('✅ Event updated');
+                        } catch (error) {
+                            showToast('❌ Failed to update event', true);
+                            info.revert();
+                        }
+                    }
+                });
+
+                calendar.render();
+                console.log('✅ Calendar rendered successfully');
+                console.log('📆 Calendar element:', document.getElementById('calendar'));
+            }
+
+            function updateUpcomingList(events) {
+                const upcomingList = document.getElementById('upcoming-list');
+                upcomingList.innerHTML = '';
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                
+                const upcomingEvents = events
+                    .filter(e => {
+                        const eventDate = new Date(e.start);
+                        return eventDate >= today && eventDate < tomorrow;
+                    })
+                    .sort((a, b) => new Date(a.start) - new Date(b.start));
+
+                if (upcomingEvents.length === 0) {
+                    upcomingList.innerHTML = '<p style="color: #000000; opacity: 0.7; font-size: 0.9em;">No events scheduled for today.</p>';
+                    return;
+                }
+
+                upcomingEvents.forEach(event => {
+                    const item = document.createElement('div');
+                    item.className = 'upcoming-item';
+                    item.dataset.eventId = event.id;
+                    const startTime = new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    item.innerHTML = `
+                        <div class="upcoming-time">${startTime}</div>
+                        <div class="upcoming-details">
+                            <h4>🗓️ ${event.title}</h4>
+                            <p>${event.extendedProps?.attendees ? event.extendedProps.attendees.join(', ') : 'No attendees'}</p>
+                        </div>
+                    `;
+                    item.addEventListener('click', () => {
+                        const calEvent = calendar.getEventById(event.id);
+                        if(calEvent) showEventDetails(calEvent);
+                    });
+                    upcomingList.appendChild(item);
+                });
+            }
+
+            // EVENT MANAGEMENT
+            function createNewEvent(dateStr = null) {
+                currentEventForEdit = null;
+                document.getElementById('event-form').reset();
+                document.getElementById('event-id').value = '';
+                document.getElementById('event-lead-id').value = '';
+                document.getElementById('event-modal-title').textContent = 'Schedule Event';
+                document.getElementById('delete-event-btn').style.display = 'none';
+                
+                if (dateStr) {
+                    const date = new Date(dateStr);
+                    document.getElementById('event-start-date').value = date.toISOString().slice(0, 16);
+                    
+                    const endDate = new Date(date.getTime() + 60 * 60 * 1000);
+                    document.getElementById('event-end-date').value = endDate.toISOString().slice(0, 16);
+                }
+                
+                openModal('event-modal');
+            }
+
+            function showEventDetails(event) {
+                currentEventForEdit = event;
+                generateAdvancedMeetingBriefing(event.id, event.extendedProps?.leadId);
+                openModal('details-modal');
+                
+                document.getElementById('details-modal-title').textContent = event.title;
+                const formatOpts = { dateStyle: 'medium', timeStyle: 'short' };
+                const startStr = new Date(event.start).toLocaleString(undefined, formatOpts);
+                const endStr = event.end ? new Date(event.end).toLocaleString(undefined, formatOpts) : startStr;
+                document.getElementById('details-time').textContent = `${startStr} - ${endStr}`;
+
+                const leadId = event.extendedProps?.leadId;
+                const crmLinkEl = document.getElementById('details-crm-link');
+                if (leadId) {
+                    const linkedLead = allLeadsCache.find(l => l.id === leadId);
+                    crmLinkEl.textContent = linkedLead ? `${linkedLead.name} from ${linkedLead.organization || 'N/A'}` : `Lead ID: ${leadId}`;
+                } else { 
+                    crmLinkEl.textContent = 'N/A'; 
+                }
+
+                document.getElementById('details-attendees').textContent = 
+                    event.extendedProps?.attendees ? event.extendedProps.attendees.join(', ') : 'N/A';
+
+                const meetingLinkItem = document.getElementById('details-meeting-link-item');
+                const meetingLink = document.getElementById('details-meeting-link');
+                if (event.extendedProps?.meetingLink) {
+                    meetingLink.href = event.extendedProps.meetingLink;
+                    meetingLinkItem.style.display = 'block';
+                } else {
+                    meetingLinkItem.style.display = 'none';
+                }
+            }
+
+            // CRM SEARCH FUNCTIONALITY
+            let crmSearchTimeout = null;
+            document.getElementById('event-crm-link').addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                const resultsContainer = document.getElementById('crm-search-results');
+                
+                if (crmSearchTimeout) clearTimeout(crmSearchTimeout);
+                
+                if (query.length < 2) {
+                    resultsContainer.style.display = 'none';
+                    return;
+                }
+                
+                crmSearchTimeout = setTimeout(() => {
+                    const results = allLeadsCache.filter(lead => 
+                        lead.name.toLowerCase().includes(query.toLowerCase()) ||
+                        (lead.organization && lead.organization.toLowerCase().includes(query.toLowerCase()))
+                    ).slice(0, 5);
+                    
+                    if (results.length === 0) {
+                        resultsContainer.style.display = 'none';
+                        return;
+                    }
+                    
+                    resultsContainer.innerHTML = '';
+                    results.forEach(lead => {
+                        const div = document.createElement('div');
+                        div.textContent = `${lead.name}${lead.organization ? ' - ' + lead.organization : ''}`;
+                        div.addEventListener('click', () => {
+                            document.getElementById('event-crm-link').value = `${lead.name}${lead.organization ? ' - ' + lead.organization : ''}`;
+                            document.getElementById('event-lead-id').value = lead.id;
+                            
+                            // Auto-populate attendees with lead's email
+                            const attendeesField = document.getElementById('event-attendees');
+                            if (lead.email) {
+                                const currentAttendees = attendeesField.value.trim();
+                                if (currentAttendees) {
+                                    // Add lead email if not already present
+                                    const emails = currentAttendees.split(',').map(e => e.trim());
+                                    if (!emails.includes(lead.email)) {
+                                        attendeesField.value = currentAttendees + ', ' + lead.email;
+                                    }
+                                } else {
+                                    attendeesField.value = lead.email;
+                                }
+                            }
+                            
+                            resultsContainer.style.display = 'none';
+                        });
+                        resultsContainer.appendChild(div);
+                    });
+                    resultsContainer.style.display = 'block';
+                }, 300);
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#event-crm-link') && !e.target.closest('#crm-search-results')) {
+                    document.getElementById('crm-search-results').style.display = 'none';
+                }
+            });
+
+            // FORM HANDLING
+            document.getElementById('event-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const eventId = document.getElementById('event-id').value;
+                const attendeesStr = document.getElementById('event-attendees').value;
+                const attendees = attendeesStr ? attendeesStr.split(',').map(email => email.trim()).filter(Boolean) : [];
+                const createMeetingLink = document.getElementById('create-meeting-link').checked;
+
+                const formData = {
+                    title: document.getElementById('event-title').value,
+                    start: new Date(document.getElementById('event-start-date').value).toISOString(),
+                    end: new Date(document.getElementById('event-end-date').value).toISOString(),
+                    create_meeting_link: createMeetingLink,
+                    extendedProps: {
+                        attendees: attendees,
+                        leadId: parseInt(document.getElementById('event-lead-id').value, 10) || null
+                    }
+                };
+
+                try {
+                    if (eventId) {
+                        await apiRequest(`/calendar/events/${eventId}`, 'PUT', formData);
+                        showToast('✅ Event updated!');
+                    } else {
+                        await apiRequest('/calendar/events', 'POST', formData);
+                        showToast('✅ Event created successfully!');
+                    }
+                    closeModal('event-modal');
+                    calendar.refetchEvents();
+                } catch (error) {
+                    showToast(`❌ Error saving event: ${error.message}`, true);
+                }
+            });
+
+            document.getElementById('delete-event-btn').addEventListener('click', async () => {
+                if (!confirm('Are you sure you want to delete this event?')) return;
+                
+                const eventId = document.getElementById('event-id').value;
+                try {
+                    await apiRequest(`/calendar/events/${eventId}`, 'DELETE');
+                    showToast('✅ Event deleted');
+                    closeModal('event-modal');
+                    calendar.refetchEvents();
+                } catch (error) {
+                    showToast(`❌ Error deleting event: ${error.message}`, true);
+                }
+            });
+
+            // EDIT EVENT FROM DETAILS MODAL
+            document.getElementById('edit-event-btn').addEventListener('click', () => {
+                if (!currentEventForEdit) return;
+                
+                closeModal('details-modal');
+                
+                document.getElementById('event-id').value = currentEventForEdit.id;
+                document.getElementById('event-title').value = currentEventForEdit.title;
+                document.getElementById('event-start-date').value = new Date(currentEventForEdit.start).toISOString().slice(0, 16);
+                document.getElementById('event-end-date').value = currentEventForEdit.end ? new Date(currentEventForEdit.end).toISOString().slice(0, 16) : new Date(currentEventForEdit.start).toISOString().slice(0, 16);
+                document.getElementById('event-attendees').value = currentEventForEdit.extendedProps?.attendees ? currentEventForEdit.extendedProps.attendees.join(', ') : '';
+                document.getElementById('event-lead-id').value = currentEventForEdit.extendedProps?.leadId || '';
+                
+                if (currentEventForEdit.extendedProps?.leadId) {
+                    const linkedLead = allLeadsCache.find(l => l.id === currentEventForEdit.extendedProps.leadId);
+                    if (linkedLead) {
+                        document.getElementById('event-crm-link').value = `${linkedLead.name}${linkedLead.organization ? ' - ' + linkedLead.organization : ''}`;
+                    }
+                }
+                
+                document.getElementById('event-modal-title').textContent = 'Edit Event';
+                document.getElementById('delete-event-btn').style.display = 'block';
+                openModal('event-modal');
+            });
+
+            // MODAL MANAGEMENT
+            document.querySelectorAll('.close-btn, .cancel-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const modal = e.target.closest('.modal-overlay');
+                    if (modal) closeModal(modal.id);
+                });
+            });
+
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeModal(modal.id);
+                });
+            });
+
+            // TAB MANAGEMENT FOR INTEGRATION SETTINGS
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const tabName = e.target.dataset.tab;
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.integration-tab').forEach(t => t.classList.remove('active'));
+                    e.target.classList.add('active');
+                    document.getElementById(`${tabName}-tab`).classList.add('active');
+                });
+            });
+
+            // INTEGRATION SETTINGS (PLACEHOLDER)
+            document.getElementById('google-oauth-btn').addEventListener('click', () => {
+                showToast('🔄 Google Calendar integration coming soon!');
+            });
+
+            document.getElementById('outlook-oauth-btn').addEventListener('click', () => {
+                showToast('🔄 Outlook Calendar integration coming soon!');
+            });
+
+            document.getElementById('save-integration-settings').addEventListener('click', () => {
+                showToast('✅ Integration settings saved!');
+                closeModal('integration-modal');
+            });
+
+            // EVENT LISTENERS
+            const logoImg = document.querySelector('.logo-img');
+            if (logoImg) {
+                logoImg.addEventListener('click', () => { window.location.href = '/'; });
+            }
+            
+            document.getElementById('toggleBtn').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('hidden');
+            });
+
+            document.getElementById('schedule-event-btn').addEventListener('click', () => {
+                createNewEvent();
+            });
+
+            // Theta quick-scheduler listeners removed
+
+            document.getElementById('settings-btn').addEventListener('click', () => window.location.href = '/settings');
+            
+            document.getElementById('logout-btn').addEventListener('click', () => { 
+                localStorage.removeItem('jwt_token'); 
+                window.location.href = '/auth'; 
+            });
+
+            // SALES MENU DROPDOWN
+            document.getElementById('salesMenu').addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('salesMenu').classList.toggle('open');
+            });
+            document.getElementById('crmMenu').addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('crmMenu').classList.toggle('open');
+            });
+
+            document.addEventListener('click', () => {
+                document.getElementById('salesMenu').classList.remove('open');
+            });
+
+            // INITIALIZATION
+            async function initializeApp() {
+                try {
+                    // Initialize MCP integration
+                    await initializeMCP();
+                    
+                    // Fetch leads for CRM linking
+                    allLeadsCache = await apiRequest('/leads?timeframe=all', 'GET', null, false);
+                    
+                    // Initialize calendar
+                    initializeCalendar();
+                    
+                    // Clock/sidebar removed; no initialization needed
+                    
+                    showToast('🎉 Calendar loaded successfully!');
+                } catch (error) {
+                    console.error('Failed to initialize app:', error);
+                    showToast('⚠️ Some features may be limited', true);
+                    
+                    // Initialize calendar anyway
+                    initializeCalendar();
+                }
+            }
+
+            initializeApp();
+        });
+    </script>
+</body>
+</html>

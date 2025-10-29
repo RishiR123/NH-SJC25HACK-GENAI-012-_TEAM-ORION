@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Management - Sales OS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@0.548.0/dist/umd/lucide.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/main.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.8/main.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.8/main.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='lead.css') }}">
+    
+    <style>
+        /* Loading Spinner */
+        @keyframes spinner-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spinner-rotate 0.8s linear infinite;
+        }
+        .action-btn .loading-spinner {
+             border: 2px solid rgba(124, 58, 237, 0.3);
+             border-top-color: #7c3aed;
+        }
+        .action-btn.loading .loading-spinner {
+            display: block;
+        }
+        .action-btn.loading i {
+            display: none;
+        }
+         .action-btn .loading-spinner {
+            display: none;
+        }
+
+        /* AI Enrichment Section */
+        .lead-enrichment-section {
+            background-color: #f9faff; /* A very light, complementary background */
+            border: 1px solid #e0e7ff;
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+        
+        .section-header.enrich-header {
+            margin-bottom: 20px;
+        }
+
+        .enrichment-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .enrichment-card,
+        .intent-score-card,
+        .persona-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+
+        .enrichment-card h5 {
+            font-size: 1em;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .enrichment-card h5 i {
+            width: 18px;
+            height: 18px;
+            color: #7c3aed;
+        }
+
+        .intent-score-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .intent-score-bar-container {
+            width: 100%;
+            height: 12px;
+            background-color: #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .intent-score-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 6px;
+            transition: width 0.5s ease-out, background-color 0.5s ease;
+        }
+        
+        /* Color logic for intent bar */
+        .intent-score-bar[data-intent="low"] { background-color: #ef4444; } /* Red */
+        .intent-score-bar[data-intent="medium"] { background-color: #f59e0b; } /* Yellow */
+        .intent-score-bar[data-intent="high"] { background-color: #22c55e; } /* Green */
+
+        .intent-score-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+        
+        .intent-score-card h5 {
+             margin: 0;
+             text-align: center;
+        }
+        
+        .persona-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .persona-card .persona-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #e0e7ff;
+            color: #7c3aed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+        
+        .persona-card h5 {
+            margin: 0;
+        }
+
+        #enrichmentPersona {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        #enrichmentSummary {
+            font-style: italic;
+            color: #4b5563;
+        }
+
+        #enrichmentPainPoints {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+        
+        #enrichmentPainPoints li {
+            position: relative;
+            padding-left: 28px;
+            color: #374151;
+            font-size: 0.95em;
+            margin-bottom: 8px;
+        }
+        
+        #enrichmentPainPoints li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 5px;
+            width: 18px;
+            height: 18px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ef4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='lucide lucide-alert-triangle'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        
+        #enrichmentOutreachMessage {
+            background-color: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95em;
+            line-height: 1.6;
+            color: #374151;
+            white-space: pre-wrap;
+        }
+
+    </style>
+    </head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="/static/logo.png"
+                 alt="SalesOS Logo"
+                 class="logo-img"
+                 onerror="this.onerror=null;this.src='https://placehold.co/120x40/050507/C0FF6B?text=SalesOS&font=inter';">
+
+        </div>
+        <div class="nav">
+            <ul>
+                <li ><a href="/space"><div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>Space</div></a></li>
+                <li id="crmMenu" class="open">
+                    <div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 13h6v-2H4v2zm0 4h6v-2H4v2zm0-8h6V7H4v2zm8 2h9V7h-9v2zm0 4h9v-2h-9v2zm0 4h9v-2h-9v2z"/></svg>MIni-Crm<svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div>
+                    <ul class="submenu"><li class="active"><a href="/mini-crm/leads">Leads</a></li><li><a href="/mini-crm/deals">Deals</a></li><li><a href="/mini-crm/sales-funnel">Sales Funnel</a></li><li><a href="/mini-crm/finance">Sales Finance</a></li></ul> </li>
+                <li><a href="/calendar"><div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>Calendar</div></a></li>
+
+                <li id="salesMenu"> <div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zM10 4h4v2h-4V4zm10 15H4V8h16v11z"/></svg>Sales<svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div>
+                    <ul class="submenu">
+                        <li><a href="/sales/pre-sales">Pre-Sales</a></li>
+                        <li><a href="/sales/post-sales">Post-Sales</a></li>
+                    </ul>
+                </li>
+                <li><a href="/agent-connect"><div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm0-4c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm0-4c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm-4 4c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm8 0c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2z"/></svg>Agent Connect</div></a></li>
+                </ul>
+        </div>
+        
+        <div class="bottom-section">
+            <div class="profile">
+                <div class="profile-icon-container">
+                    <img id="profile-img" src="" alt="User Profile" class="profile-icon-img hidden" onerror="this.classList.add('hidden'); document.getElementById('default-profile-icon').classList.remove('hidden');">
+                    <svg id="default-profile-icon" class="profile-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </div>
+                <span class="profile-name" id="profile-name"></span>
+            </div>
+
+            <ul class="footer-links">
+                <li id="settings-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.08-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49.42l.38-2.65c.61-.25 1.17-.59 1.69.98l2.49 1c.23.08.49 0 .61.22l2-3.46c.12-.22.07.49-.12.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+                    </svg>
+                    Settings
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="toggle-btn" id="toggleBtn">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <main class="main-content" id="mainContent">
+        <div class="crm-container">
+            <header class="crm-header-modern">
+                <div class="header-left">
+                    <h1 class="page-title">Lead Management</h1>
+                    <div class="breadcrumb">
+                        <span>Dashboard</span>
+                        <i data-lucide="chevron-right"></i>
+                        <span>Leads</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon" id="refreshBtn" title="Refresh">
+                        <i data-lucide="refresh-cw"></i>
+                    </button>
+                    <button class="btn-icon" id="filterToggleBtn" title="Toggle Filters">
+                        <i data-lucide="filter"></i>
+                    </button>
+                    <button class="btn-primary" id="addLeadBtn">
+                        <i data-lucide="plus"></i>
+                        Add Lead
+                    </button>
+                    <button class="btn-secondary" id="importLeadsBtn">
+                        <i data-lucide="upload"></i>
+                        Import
+                    </button>
+                </div>
+            </header>
+
+            <section class="search-filters-section" id="filtersSection">
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" id="searchInput" placeholder="Search leads by name, email, or phone..." class="search-input">
+                        <button class="search-clear" id="searchClear" style="display: none;">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select id="statusFilter" class="filter-select">
+                            <option value="">All Status</option>
+                            <option value="New">New</option>
+                            <option value="Contacted">Contacted</option>
+                            <option value="Won">Won</option>
+                            <option value="Lost">Lost</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Stage</label>
+                        <select id="stageFilter" class="filter-select">
+                            <option value="">All Stages</option>
+                            <option value="Qualification">Qualification</option>
+                            <option value="Proposal">Proposal</option>
+                            <option value="Negotiation">Negotiation</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Owner</label>
+                        <select id="ownerFilter" class="filter-select">
+                            <option value="">All Owners</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Date Range</label>
+                        <select id="dateRangeFilter" class="filter-select">
+                            <option value="">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="quarter">This Quarter</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn-filter-clear" id="clearFilters">
+                        <i data-lucide="x"></i>
+                        Clear
+                    </button>
+                </div>
+            </section>
+
+            <section class="stats-dashboard">
+                <div class="stat-card">
+                    <div class="stat-icon stat-new">
+                        <i data-lucide="user-plus"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="statNewLeads">0</h3>
+                        <p>New Leads</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon stat-contacted">
+                        <i data-lucide="phone"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="statContacted">0</h3>
+                        <p>Contacted</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon stat-qualified">
+                        <i data-lucide="target"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="statQualified">0</h3>
+                        <p>Qualified</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon stat-converted">
+                        <i data-lucide="trophy"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="statConverted">0</h3>
+                        <p>Converted</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="table-container">
+                <div class="table-header" id="tableHeader">
+                    <div class="bulk-actions" id="bulkActions" style="display: none;">
+                        <span id="selectedCount">0 selected</span>
+                        <div class="bulk-action-buttons">
+                            <button class="btn-bulk" id="bulkUpdateStatus">
+                                <i data-lucide="edit"></i>
+                                Update Status
+                            </button>
+                            <button class="btn-bulk" id="bulkAssign">
+                                <i data-lucide="user-check"></i>
+                                Assign Owner
+                            </button>
+                            <button class="btn-bulk btn-danger" id="bulkDelete">
+                                <i data-lucide="trash-2"></i>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-controls">
+                        <div class="view-options">
+                            <button class="view-btn active" data-view="table">
+                                <i data-lucide="table"></i>
+                            </button>
+                            <button class="view-btn" data-view="kanban">
+                                <i data-lucide="columns"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="pagination-info">
+                            <span id="paginationInfo">Showing 1-20 of 156 leads</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="data-grid-container" id="dataGridContainer">
+                    <div class="data-grid-skeleton" id="gridSkeleton">
+                        <div class="skeleton-row" style="display: none;">
+                            <div class="skeleton-cell skeleton-checkbox"></div>
+                            <div class="skeleton-cell skeleton-avatar"></div>
+                            <div class="skeleton-cell skeleton-text-long"></div>
+                            <div class="skeleton-cell skeleton-text-medium"></div>
+                            <div class="skeleton-cell skeleton-badge"></div>
+                            <div class="skeleton-cell skeleton-text-short"></div>
+                            <div class="skeleton-cell skeleton-actions"></div>
+                        </div>
+                    </div>
+                    
+                    <table class="data-grid" id="leadsGrid">
+                        <thead>
+                            <tr>
+                                <th class="checkbox-col">
+                                    <input type="checkbox" id="selectAll" class="checkbox-input">
+                                </th>
+                                <th class="sortable" data-sort="name">
+                                    <div class="th-content">
+                                        <span>Lead</span>
+                                        <i data-lucide="chevrons-up-down" class="sort-icon"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable" data-sort="email">
+                                    <div class="th-content">
+                                        <span>Contact</span>
+                                        <i data-lucide="chevrons-up-down" class="sort-icon"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable" data-sort="status">
+                                    <div class="th-content">
+                                        <span>Status</span>
+                                        <i data-lucide="chevrons-up-down" class="sort-icon"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable" data-sort="stage">
+                                    <div class="th-content">
+                                        <span>Stage</span>
+                                        <i data-lucide="chevrons-up-down" class="sort-icon"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable" data-sort="created_at">
+                                    <div class="th-content">
+                                        <span>Created</span>
+                                        <i data-lucide="chevrons-up-down" class="sort-icon"></i>
+                                    </div>
+                                </th>
+                                <th class="actions-col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leadsTableBody">
+                            </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-container" id="paginationContainer">
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" id="prevPage" disabled>
+                            <i data-lucide="chevron-left"></i>
+                            Previous
+                        </button>
+                        
+                        <div class="pagination-numbers" id="paginationNumbers">
+                            </div>
+                        
+                        <button class="pagination-btn" id="nextPage">
+                            Next
+                            <i data-lucide="chevron-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="page-size-selector">
+                        <label>Show</label>
+                        <select id="pageSizeSelect">
+                            <option value="10">10</option>
+                            <option value="20" selected>20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <label>per page</label>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="leadModalOverlay">
+        <div class="lead-profile-modal" id="leadProfileModal" data-lead-id="">
+            <header class="modal-header">
+                <div class="modal-title">
+                    <h2 id="modalLeadName">Lead Profile</h2>
+                    <div class="lead-status-badge" id="modalLeadStatus">New</div>
+                </div>
+                <div class="modal-actions">
+                    <div class="quick-actions">
+                        <button class="action-btn" id="modalEnrichBtn" title="Enrich Lead with AI">
+                            <i data-lucide="sparkles"></i>
+                            <div class="loading-spinner"></div>
+                        </button>
+                        <button class="action-btn" id="modalCallBtn" title="Call Lead">
+                            <i data-lucide="phone"></i>
+                        </button>
+                        <button class="action-btn" id="modalEmailBtn" title="Send Email">
+                            <i data-lucide="mail"></i>
+                        </button>
+                        <button class="action-btn" id="modalWhatsappBtn" title="WhatsApp">
+                            <i data-lucide="message-circle"></i>
+                        </button>
+                        <button class="action-btn" id="modalScheduleBtn" title="Schedule Meeting">
+                            <i data-lucide="calendar-plus"></i>
+                        </button>
+                    </div>
+                    <button class="close-btn" id="closeLeadModal">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="modal-body">
+                <nav class="modal-sidebar">
+                    <ul class="modal-nav">
+                        <li class="modal-nav-item active" data-tab="overview">
+                            <i data-lucide="user"></i>
+                            <span>Overview</span>
+                        </li>
+                        <li class="modal-nav-item" data-tab="timeline">
+                            <i data-lucide="activity"></i>
+                            <span>Timeline</span>
+                            <span class="nav-badge" id="timelineBadge">0</span>
+                        </li>
+                        <li class="modal-nav-item" data-tab="communications">
+                            <i data-lucide="message-square"></i>
+                            <span>Communications</span>
+                            <span class="nav-badge" id="commsBadge">0</span>
+                        </li>
+                        <li class="modal-nav-item" data-tab="notes">
+                            <i data-lucide="file-text"></i>
+                            <span>Notes</span>
+                            <span class="nav-badge" id="notesBadge">0</span>
+                        </li>
+                        <li class="modal-nav-item" data-tab="calendar">
+                            <i data-lucide="calendar"></i>
+                            <span>Calendar</span>
+                            <span class="nav-badge" id="calendarBadge">0</span>
+                        </li>
+                        <li class="modal-nav-item" data-tab="documents">
+                            <i data-lucide="folder"></i>
+                            <span>Documents</span>
+                            <span class="nav-badge" id="docsBadge">0</span>
+                        </li>
+                    </ul>
+                </nav>
+
+                <main class="modal-main-content">
+                    <div class="modal-tab-pane active" id="overview-pane">
+                        <section class="lead-profile-header">
+                            <div class="profile-avatar">
+                                <span id="profileInitials">JD</span>
+                            </div>
+                            <div class="profile-info">
+                                <h3 id="profileName">John Doe</h3>
+                                <p id="profileTitle">Software Engineer at Tech Corp</p>
+                                <div class="profile-contact">
+                                    <span id="profileEmail">john@example.com</span>
+                                    <span class="separator">•</span>
+                                    <span id="profilePhone">+1 234 567 8900</span>
+                                </div>
+                            </div>
+                            <div class="profile-score">
+                                <div class="score-circle">
+                                    <svg width="80" height="80" class="score-svg">
+                                        <circle cx="40" cy="40" r="35" stroke="#e5e7eb" stroke-width="6" fill="none"></circle>
+                                        <circle cx="40" cy="40" r="35" stroke="#7c3aed" stroke-width="6" fill="none" 
+                                                stroke-dasharray="220" stroke-dashoffset="110" id="scoreCircle"></circle>
+                                    </svg>
+                                    <div class="score-value" id="profileScore">75</div>
+                                </div>
+                                <p>Lead Score</p>
+                            </div>
+                        </section>
+
+                        <section class="lead-enrichment-section" id="leadEnrichmentSection" style="display: none;">
+                            <div class="section-header enrich-header">
+                                <h4>
+                                    <i data-lucide="sparkles" style="color: #7c3aed; width: 20px; height: 20px;"></i>
+                                    AI Lead Enrichment
+                                </h4>
+                            </div>
+                            
+                            <div class="enrichment-card" style="margin-bottom: 20px;">
+                                <h5><i data-lucide="building-2"></i>Company Summary</h5>
+                                <p id="enrichmentSummary">Loading...</p>
+                            </div>
+
+                            <div class="enrichment-grid">
+                                <div class="intent-score-card">
+                                    <h5><i data-lucide="gauge"></i>Buying Intent</h5>
+                                    <div class="intent-score-value" id="enrichmentIntentScore">0</div>
+                                    <div class="intent-score-bar-container">
+                                        <div class="intent-score-bar" id="enrichmentIntentBar"></div>
+                                    </div>
+                                </div>
+                                <div class="persona-card">
+                                    <div class="persona-icon">
+                                        <i data-lucide="user-round-check"></i>
+                                    </div>
+                                    <h5>Buyer Persona</h5>
+                                    <p id="enrichmentPersona">Loading...</p>
+                                </div>
+                            </div>
+
+                            <div class="enrichment-card" style="margin-bottom: 20px;">
+                                <h5><i data-lucide="alert-triangle"></i>Top 3 Pain Points</h5>
+                                <ul id="enrichmentPainPoints">
+                                    <li>Loading...</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="enrichment-card">
+                                <h5><i data-lucide="send"></i>Suggested Outreach</h5>
+                                <pre id="enrichmentOutreachMessage">Loading...</pre>
+                            </div>
+                        </section>
+                        <section class="lead-details-section">
+                            <div class="section-header">
+                                <h4>Lead Information</h4>
+                                <button class="btn-edit" id="editDetailsBtn">
+                                    <i data-lucide="edit-2"></i>
+                                    Edit
+                                </button>
+                            </div>
+                            
+                            <form class="details-form" id="leadDetailsForm">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Full Name</label>
+                                        <input type="text" name="name" id="leadName" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Email</label>
+                                        <input type="email" name="email" id="leadEmail" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Phone</label>
+                                        <input type="tel" name="phone" id="leadPhone" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Company</label>
+                                        <input type="text" name="company" id="leadCompany" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Position</label>
+                                        <input type="text" name="position" id="leadPosition" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Source</label>
+                                        <select name="source" id="leadSource" disabled>
+                                            <option value="">Select Source</option>
+                                            <option value="Website">Website</option>
+                                            <option value="Social Media">Social Media</option>
+                                            <option value="Referral">Referral</option>
+                                            <option value="Direct">Direct</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <select name="status" id="leadStatus">
+                                            <option value="New">New</option>
+                                            <option value="Contacted">Contacted</option>
+                                            <option value="Qualified">Qualified</option>
+                                            <option value="Won">Won</option>
+                                            <option value="Lost">Lost</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Stage</label>
+                                        <select name="stage" id="leadStage">
+                                            <option value="Awareness">Awareness</option>
+                                            <option value="Interest">Interest</option>
+                                            <option value="Consideration">Consideration</option>
+                                            <option value="Decision">Decision</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-actions" id="formActions" style="display: none;">
+                                    <button type="button" class="btn-secondary" id="cancelEdit">Cancel</button>
+                                    <button type="submit" class="btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </section>
+                    </div>
+
+                    <div class="modal-tab-pane" id="timeline-pane">
+                        <div class="tab-header">
+                            <h4>Activity Timeline</h4>
+                            <button class="btn-primary" id="addActivityBtn">
+                                <i data-lucide="plus"></i>
+                                Add Activity
+                            </button>
+                        </div>
+                        
+                        <div class="timeline-filters">
+                            <div class="filter-tabs">
+                                <button class="filter-tab active" data-filter="all">All</button>
+                                <button class="filter-tab" data-filter="calls">Calls</button>
+                                <button class="filter-tab" data-filter="emails">Emails</button>
+                                <button class="filter-tab" data-filter="meetings">Meetings</button>
+                                <button class="filter-tab" data-filter="notes">Notes</button>
+                            </div>
+                        </div>
+
+                        <div class="timeline-container" id="timelineContainer">
+                            <div class="timeline-loading" style="display: none;">
+                                <div class="loading-spinner"></div>
+                                <p>Loading timeline...</p>
+                            </div>
+                            
+                            <div class="timeline-list" id="timelineList">
+                                </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-tab-pane" id="communications-pane">
+                        <div class="tab-header">
+                            <h4>Communications Log</h4>
+                            <div class="comm-actions">
+                                <button class="btn-primary" id="composeEmailBtn">
+                                    <i data-lucide="mail"></i>
+                                    Send Email
+                                </button>
+                                <button class="btn-secondary" id="logCallBtn">
+                                    <i data-lucide="phone"></i>
+                                    Log Call
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="communications-list" id="communicationsList">
+                            </div>
+                    </div>
+
+                    <div class="modal-tab-pane" id="notes-pane">
+                        <div class="tab-header">
+                            <h4>Notes</h4>
+                            <button class="btn-primary" id="addNoteBtn">
+                                <i data-lucide="plus"></i>
+                                Add Note
+                            </button>
+                        </div>
+                        
+                        <div class="quick-note-form" id="quickNoteForm" style="display: none;">
+                            <textarea placeholder="Add a note..." id="quickNoteText"></textarea>
+                            <div class="note-actions">
+                                <button class="btn-secondary" id="cancelNote">Cancel</button>
+                                <button class="btn-primary" id="saveNote">Save Note</button>
+                            </div>
+                        </div>
+                        
+                        <div class="notes-list" id="notesList">
+                            </div>
+                    </div>
+
+                    <div class="modal-tab-pane" id="calendar-pane">
+                        <div class="tab-header">
+                            <h4>Calendar & Meetings</h4>
+                            <button class="btn-primary" id="scheduleMeetingBtn">
+                                <i data-lucide="calendar-plus"></i>
+                                Schedule Meeting
+                            </button>
+                        </div>
+                        
+                        <div class="calendar-container" id="leadCalendar">
+                            <p class="empty-message">No calendar events found.</p>
+                        </div>
+                    </div>
+
+                    <div class="modal-tab-pane" id="documents-pane">
+                        <div class="tab-header">
+                            <h4>Documents</h4>
+                            <button class="btn-primary" id="uploadDocBtn">
+                                <i data-lucide="upload"></i>
+                                Upload Document
+                            </button>
+                        </div>
+                        
+                        <div class="documents-grid" id="documentsGrid">
+                            </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addLeadModalOverlay">
+        <div class="modal-content add-lead-modal">
+            <header class="modal-header">
+                <div class="modal-title">
+                    <div class="modal-icon">
+                        <i data-lucide="user-plus"></i>
+                    </div>
+                    <div>
+                        <h2>Add New Lead</h2>
+                        <p class="modal-subtitle">Create a new lead to start your sales process</p>
+                    </div>
+                </div>
+                <button class="close-btn" id="closeAddLeadModal">
+                    <i data-lucide="x"></i>
+                </button>
+            </header>
+
+            <div class="modal-body">
+                <form id="addLeadForm" class="add-lead-form">
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i data-lucide="user"></i>
+                            Primary Information
+                        </h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="newLeadName">
+                                    <i data-lucide="user"></i>
+                                    Full Name *
+                                </label>
+                                <input type="text" id="newLeadName" name="name" placeholder="Enter full name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="newLeadEmail">
+                                    <i data-lucide="mail"></i>
+                                    Email Address *
+                                </label>
+                                <input type="email" id="newLeadEmail" name="email" placeholder="Enter email address" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="newLeadPhone">
+                                    <i data-lucide="phone"></i>
+                                    Phone Number
+                                </label>
+                                <input type="tel" id="newLeadPhone" name="phone" placeholder="Enter phone number">
+                            </div>
+                            <div class="form-group">
+                                <label for="newLeadCompany">
+                                    <i data-lucide="building"></i>
+                                    Company
+                                </label>
+                                <input type="text" id="newLeadCompany" name="company" placeholder="Enter company name">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i data-lucide="settings"></i>
+                            Lead Details
+                        </h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="newLeadSource">
+                                    <i data-lucide="globe"></i>
+                                    Lead Source
+                                </label>
+                                <select id="newLeadSource" name="source">
+                                    <option value="">Select Source</option>
+                                    <option value="Website">🌐 Website</option>
+                                    <option value="Social Media">📱 Social Media</option>
+                                    <option value="Referral">🤝 Referral</option>
+                                    <option value="Direct">🎯 Direct</option>
+                                    <option value="Cold Outreach">❄️ Cold Outreach</option>
+                                    <option value="Event">🎪 Event</option>
+                                    <option value="Advertisement">📢 Advertisement</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="newLeadOwner">
+                                    <i data-lucide="user-check"></i>
+                                    Assign To
+                                </label>
+                                <select id="newLeadOwner" name="owner">
+                                    <option value="">Select Owner</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="newLeadValue">
+                                    <i data-lucide="dollar-sign"></i>
+                                    Estimated Value
+                                </label>
+                                <input type="number" id="newLeadValue" name="value" placeholder="0.00" min="0" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i data-lucide="file-text"></i>
+                            Initial Notes
+                        </h3>
+                        <div class="form-group full-width">
+                            <textarea id="newLeadNotes" name="notes" rows="4" placeholder="Add any initial notes, context, or important information about this lead..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" id="cancelAddLead">
+                            <i data-lucide="x"></i>
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i data-lucide="user-plus"></i>
+                            Create Lead
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="mail-sidebar" id="mail-sidebar">
+        <div class="mail-sidebar-header">
+            <h3>Email Assistant</h3>
+            <button class="mail-sidebar-close" id="mail-sidebar-close">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        
+        <div class="mail-recipient-display" id="mail-recipient-display">
+            <div class="recipient-info">
+                <div class="recipient-avatar">
+                    <i data-lucide="user"></i>
+                </div>
+                <div class="recipient-details">
+                    <div class="recipient-name" id="recipient-name">Select a lead</div>
+                    <div class="recipient-email" id="recipient-email">-</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mail-chat-section">
+            <div class="mail-chat-history" id="mail-chat-history">
+                <div class="chat-placeholder">
+                    <i data-lucide="message-circle"></i>
+                    <p>Start a conversation with AI to draft emails</p>
+                </div>
+            </div>
+            
+            <div class="mail-chat-input-container">
+                <input type="text" id="mail-chat-input" placeholder="Ask AI to draft an email..." class="mail-chat-input">
+                <button class="mail-chat-send" id="mail-chat-send">
+                    <i data-lucide="send"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="mail-manual-section">
+            <div class="manual-mail-toggle">
+                <button class="manual-mail-btn" id="manual-mail-toggle">
+                    <i data-lucide="edit-3"></i>
+                    Manual Compose
+                </button>
+            </div>
+            
+            <form class="manual-mail-form" id="manual-mail-form" style="display: none;">
+                <div class="form-group">
+                    <label for="mail-subject">Subject</label>
+                    <input type="text" id="mail-subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="mail-body">Message</label>
+                    <textarea id="mail-body" rows="6" required></textarea>
+                </div>
+                <button type="submit" class="btn-primary" id="mail-send-btn">
+                    <i data-lucide="send"></i>
+                    Send Email
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="mail-sidebar-overlay" id="mail-sidebar-overlay"></div>
+
+    <div class="message-sidebar" id="message-sidebar">
+        <div class="mail-sidebar-header">
+            <h3>AI Message Assistant</h3>
+            <button class="mail-sidebar-close" id="message-sidebar-close">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        
+        <div class="recipient-info">
+            <div class="recipient-avatar">
+                <i data-lucide="user"></i>
+            </div>
+            <div class="recipient-details">
+                <div class="recipient-name" id="message-recipient-name">John Doe</div>
+                <div class="recipient-contact" id="message-recipient-phone">+1 234 567 8900</div>
+            </div>
+        </div>
+        
+        <div class="message-chat-section">
+            <div class="message-chat-history" id="message-chat-history">
+                </div>
+            
+            <div class="message-chat-input-container">
+                <input type="text" id="message-chat-input" placeholder="Ask AI to draft a message..." class="message-chat-input">
+                <button class="message-chat-send" id="message-chat-send">
+                    <i data-lucide="send"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="message-options">
+            <button class="btn-secondary" id="send-whatsapp-btn">
+                <i data-lucide="message-circle"></i>
+                Send WhatsApp
+            </button>
+            <button class="btn-secondary" id="send-sms-btn">
+                <i data-lucide="smartphone"></i>
+                Send SMS
+            </button>
+            <button class="btn-primary" id="send-email-btn">
+                <i data-lucide="mail"></i>
+                Send Email
+            </button>
+        </div>
+    </div>
+    
+    <div class="message-sidebar-overlay" id="message-sidebar-overlay"></div>
+
+    <div class="modal-overlay" id="schedule-modal-overlay">
+        <div class="modal-content schedule-modal">
+            <div class="modal-header">
+                <h3>Schedule Meeting</h3>
+                <button class="modal-close" id="schedule-modal-close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            
+            <form class="schedule-form" id="schedule-form">
+                <div class="form-group">
+                    <label for="meeting-title">Meeting Title</label>
+                    <input type="text" id="meeting-title" placeholder="Enter meeting title" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="meeting-date">Date</label>
+                        <input type="date" id="meeting-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="meeting-time">Time</label>
+                        <input type="time" id="meeting-time" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="meeting-duration">Duration (minutes)</label>
+                    <select id="meeting-duration">
+                        <option value="30">30 minutes</option>
+                        <option value="60" selected>1 hour</option>
+                        <option value="90">1.5 hours</option>
+                        <option value="120">2 hours</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="meeting-description">Description</label>
+                    <textarea id="meeting-description" placeholder="Meeting description..." rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="create-meeting-link" checked>
+                        Create Google Meet link
+                    </label>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="schedule-cancel-btn">Cancel</button>
+                    <button type="submit" class="btn-primary" id="schedule-submit-btn">
+                        <i data-lucide="calendar-plus"></i>
+                        Schedule Meeting
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer">
+        </div>
+
+    <script src="https://unpkg.com/lucide@0.548.0/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.8/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid@6.1.8/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.8/main.min.js"></script>
+    
+    <script src="{{ url_for('static', filename='lead.js') }}"></script>
+
+    <script>
+        // This script block should be placed *after* your lead.js script tag.
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons(); // Ensure icons are rendered initially
+
+            // --- Sidebar Toggle (if needed, copy from finance.html) ---
+            const toggleBtn = document.getElementById('toggleBtn');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+
+            if (toggleBtn && sidebar && mainContent) {
+                toggleBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('collapsed');
+                    mainContent.classList.toggle('expanded');
+                });
+            }
+
+            // --- START: FIX FOR SALES DROPDOWN ---
+            const salesMenu = document.getElementById('salesMenu');
+            if (salesMenu) {
+                const navItem = salesMenu.querySelector('.nav-item'); // Find the clickable part
+                if (navItem) {
+                    navItem.addEventListener('click', (e) => {
+                        e.preventDefault(); // Prevent default link behavior if any
+                        salesMenu.classList.toggle('open'); // Toggle the 'open' class
+                    });
+                }
+            }
+            // --- END: FIX FOR SALES DROPDOWN ---
+
+            // --- CRM Menu Toggle (Keep this) ---
+            const crmMenu = document.getElementById('crmMenu');
+            if (crmMenu) {
+                const navItem = crmMenu.querySelector('.nav-item');
+                if (navItem) {
+                    navItem.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        crmMenu.classList.toggle('open');
+                    });
+                }
+            }
+
+             // --- Profile/Settings (Keep this) ---
+             const settingsBtn = document.getElementById('settings-btn');
+             if (settingsBtn) {
+                 settingsBtn.addEventListener('click', () => {
+                     window.location.href = '/settings';
+                 });
+             }
+
+
+            // --- START: Lead Enrichment Code (Keep this) ---
+            const leadsTableBody = document.getElementById('leadsTableBody');
+            const leadProfileModal = document.getElementById('leadProfileModal');
+            
+            if (leadsTableBody && leadProfileModal) {
+                leadsTableBody.addEventListener('click', (e) => {
+                    const viewButton = e.target.closest('.view-lead-btn'); 
+                    
+                    if (viewButton) {
+                        const leadId = viewButton.dataset.leadId;
+                        if (leadId) {
+                            leadProfileModal.dataset.leadId = leadId;
+                            hideEnrichmentData(); // Clear previous data
+                            document.getElementById('modalEnrichBtn').title = "Enrich Lead with AI";
+                        } else {
+                            console.error('View button clicked, but no data-lead-id');
+                        }
+                    }
+                });
+            } 
+
+            const enrichBtn = document.getElementById('modalEnrichBtn');
+            
+            if (enrichBtn) {
+                enrichBtn.addEventListener('click', () => {
+                    const leadId = document.getElementById('leadProfileModal').dataset.leadId;
+                    if (leadId) {
+                        runEnrichment(leadId);
+                    } else {
+                        console.error("No leadId found on modal.");
+                        showToast("Error: Could not find Lead ID.", "error");
+                    }
+                });
+            }
+        });
+
+        /**
+         * Runs the enrichment process by calling the backend API.
+         * @param {string} leadId - The ID of the lead to enrich.
+         */
+        async function runEnrichment(leadId) {
+            const enrichBtn = document.getElementById('modalEnrichBtn');
+            const token = localStorage.getItem('jwt_token'); 
+
+            enrichBtn.classList.add('loading');
+            enrichBtn.disabled = true;
+
+            try {
+                const response = await fetch(`/api/leads/${leadId}/enrich`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                displayEnrichmentData(data);
+                showToast("Lead enriched successfully!", "success");
+
+                // Consider refreshing lead data here (e.g., call loadLeads())
+                
+            } catch (error) {
+                console.error('Enrichment failed:', error);
+                showToast(`Enrichment failed: ${error.message}`, "error");
+            } finally {
+                enrichBtn.classList.remove('loading');
+                enrichBtn.disabled = false;
+            }
+        }
+
+        /**
+         * Displays the enrichment data in the modal.
+         * @param {object} data - The enrichment data from the API.
+         */
+        function displayEnrichmentData(data) {
+            if (!data) {
+                hideEnrichmentData();
+                return;
+            }
+
+            document.getElementById('leadEnrichmentSection').style.display = 'block';
+            document.getElementById('enrichmentSummary').textContent = data.summary || "N/A";
+            document.getElementById('enrichmentPersona').textContent = data.persona || "N/A";
+            
+            const score = parseInt(data.intent_score, 10) || 0;
+            const intentBar = document.getElementById('enrichmentIntentBar');
+            const intentScoreEl = document.getElementById('enrichmentIntentScore');
+            
+            intentScoreEl.textContent = score;
+            intentBar.style.width = `${score}%`;
+            
+            if (score < 40) intentBar.dataset.intent = 'low';
+            else if (score < 70) intentBar.dataset.intent = 'medium';
+            else intentBar.dataset.intent = 'high';
+
+            const painPointsList = document.getElementById('enrichmentPainPoints');
+            painPointsList.innerHTML = ''; 
+            if (data.pain_points && data.pain_points.length > 0) {
+                data.pain_points.forEach(point => {
+                    const li = document.createElement('li');
+                    li.textContent = point;
+                    painPointsList.appendChild(li);
+                });
+            } else {
+                painPointsList.innerHTML = '<li>No pain points identified.</li>';
+            }
+            
+            document.getElementById('enrichmentOutreachMessage').textContent = data.outreach_message || "N/A";
+        }
+
+        /**
+         * Hides and clears the enrichment data section.
+         */
+        function hideEnrichmentData() {
+            document.getElementById('leadEnrichmentSection').style.display = 'none';
+            document.getElementById('enrichmentSummary').textContent = '';
+            document.getElementById('enrichmentPersona').textContent = '';
+            document.getElementById('enrichmentIntentScore').textContent = '0';
+            document.getElementById('enrichmentIntentBar').style.width = '0%';
+            document.getElementById('enrichmentPainPoints').innerHTML = '';
+            document.getElementById('enrichmentOutreachMessage').textContent = '';
+        }
+        
+        /**
+         * Simple toast notification function.
+         */
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            const icon = (type === 'success') ? 'check-circle' : 'alert-circle';
+            
+            toast.innerHTML = `
+                <i data-lucide="${icon}"></i>
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+            
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.classList.add('hide');
+                setTimeout(() => toast.remove(), 300);
+            });
+
+            container.appendChild(toast);
+            lucide.createIcons(); 
+
+            setTimeout(() => {
+                toast.classList.add('hide');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+    </script>
+    </body>
+</html>

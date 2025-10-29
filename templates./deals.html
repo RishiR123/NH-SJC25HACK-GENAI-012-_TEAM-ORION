@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deals - Sales OS powered by Theta</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* DESIGN PRINCIPLES APPLIED:
+ * Primary Accent: #7C3AED (Deep Purple)
+ * Base Background: linear-gradient(135deg, #EAD9FF 0%, #FBE8F3 100%)
+ * Glass Panels: rgba(255, 255, 255, 0.45) with blur(24px)
+ * Soft Borders: rgba(0, 0, 0, 0.1)
+ * Text Primary: #000000 (Dark Slate)
+ * Text Secondary: #000000 (Medium Slate)
+ * Typography: Inter
+*/
+
+/* General Reset and Box Sizing */
+html {
+    box-sizing: border-box;
+}
+*, *::before, *::after {
+    box-sizing: inherit;
+    transition: all 0.3s ease;
+}
+
+/* Basic styling for the body and overall layout */
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    background: linear-gradient(135deg, #EAD9FF 0%, #FBE8F3 100%);
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    color: #000000;
+}
+
+/* Sidebar container styling */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 220px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    display: flex;
+    flex-direction: column;
+    z-index: 3;
+    transition: left 0.3s ease;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.sidebar.hidden {
+    left: -220px;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.logo-img {
+    max-width: 120px;
+    height: auto;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+}
+
+.logo-img:hover {
+    opacity: 0.8;
+}
+
+/* Main navigation links */
+.nav {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav li {
+    margin: 5px 0;
+    cursor: pointer;
+    position: relative;
+}
+
+.nav a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.nav-item {
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+    border-radius: 16px;
+    color: #000000;
+}
+
+.nav li:hover .nav-item {
+    background: rgba(0, 0, 0, 0.05);
+    color: #000000;
+}
+
+.nav li.active .nav-item {
+    background: #7C3AED;
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+.nav li.active .nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60%;
+    width: 4px;
+    background-color: #FFFFFF;
+    border-radius: 0 4px 4px 0;
+}
+
+.nav li.active .nav-item svg {
+    fill: #FFFFFF;
+}
+
+.nav svg {
+    width: 20px;
+    height: 20px;
+    fill: #000000;
+}
+
+.nav li:hover .nav-item svg {
+    fill: #000000;
+}
+
+.nav .dropdown-arrow {
+    position: absolute;
+    right: 15px;
+}
+
+.nav li.open .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.submenu {
+    list-style: none;
+    padding: 5px 0 5px 35px;
+    margin: 0;
+    max-height: 0;
+    overflow: hidden;
+}
+
+.submenu a {
+     font-size: 0.9em;
+     color: #000000;
+}
+
+.nav li.open > .submenu {
+    max-height: 200px;
+}
+
+.submenu li {
+    padding: 8px 15px;
+    border-radius: 12px;
+}
+
+.submenu li:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.submenu li:hover a {
+     color: #000000;
+}
+
+.submenu li.active a {
+    color: #7C3AED;
+    font-weight: 500;
+}
+
+.bottom-section {
+    padding: 15px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 16px;
+}
+.profile:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.profile-icon-container {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.profile-icon {
+    width: 24px;
+    height: 24px;
+    fill: #000000;
+}
+
+.profile-icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    color: #000000;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    padding: 10px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    border-radius: 12px;
+    color: #000000;
+}
+
+.footer-links li:hover {
+    color: #7C3AED;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.footer-links li:hover svg {
+    fill: #7C3AED;
+}
+
+.footer-links svg {
+    width: 18px;
+    height: 18px;
+    fill: #000000;
+}
+
+/* Toggle button for the sidebar */
+.toggle-btn {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 5;
+    position: fixed;
+    top: 20px;
+    left: 240px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.toggle-btn:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: translateY(-2px);
+}
+
+.toggle-btn span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: #000000;
+    margin: 2px 0;
+    border-radius: 2px;
+}
+
+.toggle-btn.visible {
+    left: 20px;
+}
+
+/* Main content area */
+.main-content {
+    flex: 1;
+    margin-left: 220px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    text-align: left;
+    overflow-y: auto;
+}
+
+.main-content::-webkit-scrollbar { width: 8px; }
+.main-content::-webkit-scrollbar-track { background: transparent; }
+.main-content::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 8px; }
+.main-content::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+
+.sidebar.hidden ~ .main-content {
+    margin-left: 0;
+}
+
+.main-content h1 {
+    font-size: 2.5em;
+    font-weight: 700;
+    color: #000000;
+    text-shadow: none;
+}
+
+/* CRM specific styles */
+.crm-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.crm-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.crm-header h1 {
+    margin: 0;
+    font-size: 2em;
+}
+
+.header-button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.add-contact-btn {
+    background-color: #7C3AED;
+    color: #FFFFFF;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
+}
+
+.add-contact-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+}
+
+.add-contact-btn svg {
+    fill: #FFFFFF;
+    width: 18px;
+    height: 18px;
+}
+
+#import-csv-btn {
+    background-color: transparent;
+    border: 2px solid #7C3AED;
+    color: #7C3AED;
+    box-shadow: none;
+}
+#import-csv-btn:hover {
+    background-color: #7C3AED;
+    color: #FFFFFF;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
+}
+#import-csv-btn svg {
+     fill: currentColor;
+}
+
+.crm-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.crm-search {
+    flex-grow: 1;
+    min-width: 200px;
+}
+
+.crm-search input,
+.filter-group select {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    color: #000000;
+    font-size: 1em;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    appearance: none;
+    backdrop-filter: blur(10px);
+}
+.crm-search input::placeholder {
+    color: #000000;
+}
+
+.filter-group select {
+    padding-right: 40px;
+}
+
+.crm-search input:focus,
+.filter-group select:focus {
+    border-color: #7C3AED;
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.2);
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.select-wrapper::after {
+    content: '▼';
+    font-size: 0.7em;
+    color: #000000;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.filter-group label {
+    font-size: 0.9em;
+    color: #000000;
+    white-space: nowrap;
+}
+
+.crm-filters {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.kanban-board {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    overflow-x: auto;
+    flex-grow: 1;
+    padding-bottom: 10px;
+}
+
+.kanban-column {
+    flex: 1 0 300px;
+    max-width: 320px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+}
+
+.kanban-column-header {
+    padding: 15px;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #000000;
+}
+.kanban-column-header .count {
+    font-size: 0.9em;
+    font-weight: 500;
+    background: rgba(0,0,0,0.1);
+    padding: 2px 8px;
+    border-radius: 8px;
+    color: #000000;
+}
+
+.kanban-cards {
+    padding: 15px;
+    overflow-y: auto;
+    flex-grow: 1;
+    min-height: 100px;
+}
+
+.kanban-card {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+.kanban-board:not(.kanban-locked) .kanban-card {
+     cursor: grab;
+}
+.kanban-board.kanban-locked .kanban-card {
+    cursor: default;
+}
+
+.kanban-card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transform: translateY(-4px);
+    border-color: rgba(0,0,0,0.15);
+}
+
+.kanban-card h4 { margin: 0 0 8px; font-weight: 500; color: #000000; }
+.kanban-card p { margin: 0 0 12px; font-size: 0.9em; color: #000000; }
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8em;
+    color: #000000;
+}
+
+.card-value {
+    font-weight: 600;
+    color: #7C3AED;
+}
+
+.kanban-card.dragging {
+    opacity: 0.5;
+    background: rgba(124, 58, 237, 0.2);
+    transform: rotate(3deg);
+}
+
+.kanban-column.drag-over .kanban-cards {
+    background-color: rgba(124, 58, 237, 0.1);
+    border: 2px dashed #7C3AED;
+    border-radius: 16px;
+}
+
+.lock-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+.lock-toggle-container label {
+     font-size: 0.9em;
+     color: #000000;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 24px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #FFFFFF;
+    border-radius: 50%;
+}
+input:checked + .slider { background-color: #7C3AED; }
+input:checked + .slider:before { transform: translateX(20px); background-color: #FFFFFF; }
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(15px);
+}
+
+.modal-overlay.visible { display: flex; }
+
+.modal-content {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 0;
+    border-radius: 24px;
+    width: 90%;
+    max-width: 850px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease-in-out;
+    backdrop-filter: blur(30px);
+    color: #000000;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.modal-header h2 { margin: 0; font-size: 1.5em; font-weight: 600; }
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #000000;
+    font-size: 2em;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 8px;
+}
+.close-btn:hover { color: #000000; }
+
+.modal-body {
+    padding: 25px 30px;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; color: #000000; margin-bottom: 6px; font-size: 0.9em; }
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 16px;
+    color: #000000;
+    font-size: 1em;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: #7C3AED;
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.2);
+}
+
+select option { background: #FFFFFF; color: #000000; }
+
+.form-group textarea { resize: vertical; min-height: 80px; }
+
+.details-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+
+
+@media(max-width: 768px) {
+    body { overflow: auto; }
+    .sidebar { left: -220px; }
+    .sidebar.active { left: 0; }
+    .main-content { margin-left: 0; padding: 20px; }
+    .toggle-btn { left: 20px; transform: none; }
+    .main-content h1 { font-size: 2em; }
+    .details-grid { grid-template-columns: 1fr; }
+    .crm-controls { flex-direction: column; align-items: stretch; }
+    .kanban-board { flex-direction: column; height: auto; }
+}
+    </style>
+</head>
+<body>
+    <div class="toggle-btn" id="toggleBtn">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="/static/logo.png"
+                 alt="SalesOS Logo"
+                 class="logo-img"
+                 onerror="this.onerror=null;this.src='https://placehold.co/120x40/050507/C0FF6B?text=SalesOS&font=inter';">
+
+        </div>
+        <div class="nav">
+            <ul>
+                <li ><a href="/space"><div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>Space</div></a></li>
+                <li id="crmMenu">
+                    <div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 13h6v-2H4v2zm0 4h6v-2H4v2zm0-8h6V7H4v2zm8 2h9V7h-9v2zm0 4h9v-2h-9v2zm0 4h9v-2h-9v2z"/></svg>MIni-Crm<svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div>
+                    <ul class="submenu"><li><a href="/mini-crm/leads">Leads</a></li><li class="active"><a href="/mini-crm/deals">Deals</a></li><li><a href="/mini-crm/sales-funnel">Sales Funnel</a></li></ul>
+                </li>
+                <li><a href="/calendar"><div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>Calendar</div></a></li>
+
+                <li id="salesMenu">
+                    <div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zM10 4h4v2h-4V4zm10 15H4V8h16v11z"/></svg>Sales<svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div>
+                    <ul class="submenu">
+                        <li><a href="/sales/pre-sales">Pre-Sales</a></li>
+                        <li><a href="/sales/post-sales">Post-Sales</a></li>
+                    </ul>
+                </li>
+                <li><div class="nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm0-4c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm0-4c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm-4 4c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm8 0c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2z"/></svg>Agent Connect</div></li>
+            </ul>
+        </div>
+        
+        <div class="bottom-section">
+            <div class="profile">
+                <div class="profile-icon-container">
+                    <img id="profile-img" src="" alt="User Profile" class="profile-icon-img hidden" onerror="this.classList.add('hidden'); document.getElementById('default-profile-icon').classList.remove('hidden');">
+                    <svg id="default-profile-icon" class="profile-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </div>
+                <span class="profile-name" id="profile-name"></span>
+            </div>
+
+            <ul class="footer-links">
+                <li id="settings-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.08-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.08.49 0 .61.22l2-3.46c.12-.22.07.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+                    </svg>
+                    Settings
+                </li>
+                <li id="logout-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 13v-2H7v-2h9V7l5 4l-5 4zm-5 6h9V4h-9v3H9V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-3h2v3z"/>
+                    </svg>
+                    Log Out
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="crm-container">
+            <div class="crm-header">
+                <h1>Deals</h1>
+                <div class="header-button-group">
+                    <button id="import-csv-btn" class="add-contact-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="18" height="18"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+                        Import
+                    </button>
+                    <button id="add-lead-main-btn" class="add-contact-btn">
+                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        Add Contact
+                    </button>
+                    <input type="file" id="csv-import-input" accept=".csv" style="display: none;">
+                </div>
+            </div>
+            
+            <div class="crm-controls">
+                <div class="crm-search">
+                    <input type="text" id="deals-search" placeholder="Search deals by name, contact or company...">
+                </div>
+                 <div class="crm-filters">
+                     <div class="filter-group">
+                         <label for="deals-timeframe-filter">Show:</label>
+                         <div class="select-wrapper">
+                             <select id="deals-timeframe-filter">
+                                 <option value="weekly" selected>This Week</option>
+                                 <option value="monthly">This Month</option>
+                                 <option value="quarterly">Last 90 Days</option>
+                                 <option value="all">All Time</option>
+                             </select>
+                         </div>
+                     </div>
+                 </div>
+                 <div class="lock-toggle-container">
+                    <label for="kanban-lock-toggle">Lock Board</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="kanban-lock-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div id="kanban-board" class="kanban-board kanban-locked">
+                </div>
+            </div>
+    </div>
+    
+    <div id="addLeadModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Lead</h2>
+                <button id="closeAddModalBtn" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addLeadForm">
+                    <div class="details-grid">
+                        <div class="form-group">
+                            <label for="newLeadName">Name</label>
+                            <input type="text" id="newLeadName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newLeadOrganization">Company</label>
+                            <input type="text" id="newLeadOrganization">
+                        </div>
+                        <div class="form-group">
+                            <label for="newLeadEmail">Email</label>
+                            <input type="email" id="newLeadEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newLeadPhone">Phone</label>
+                            <input type="tel" id="newLeadPhone">
+                        </div>
+                        <div class="form-group">
+                            <label for="newLeadStatus">Status</label>
+                            <select id="newLeadStatus">
+                                <option value="New" selected>New</option>
+                                <option value="Contacted">Contacted</option>
+                                <option value="Won">Won</option>
+                                <option value="Lost">Lost</option>
+                            </select>
+                        </div>
+                         <div class="form-group">
+                            <label for="newLeadValue">Value ($)</label>
+                            <input type="number" id="newLeadValue" placeholder="e.g., 50000">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="newLeadNotes">Notes</label>
+                        <textarea id="newLeadNotes" rows="3"></textarea>
+                    </div>
+                    <div style="text-align: right;">
+                        <button type="submit" class="add-contact-btn">Add Lead</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('jwt_token');
+
+            // --- AUTHENTICATION & USER INFO ---
+            function parseJwt(token) {
+                try { return JSON.parse(atob(token.split('.')[1])); } catch (e) { return null; }
+            }
+            if (!token) { window.location.href = '/auth'; return; }
+            const decodedToken = parseJwt(token);
+            if (!decodedToken || decodedToken.exp * 1000 < Date.now()) {
+                localStorage.removeItem('jwt_token');
+                window.location.href = '/auth';
+                return;
+            }
+            const userName = decodedToken.name || 'User';
+            const currentUserId = decodedToken.user_id;
+
+            // --- STATE VARIABLES ---
+            let allDeals = [];
+            let orgUsers = {}; // To map user_id to user name
+            let currentOrgId = null;
+            let currentDealsTimeframe = 'weekly';
+            let isKanbanLocked = true; // Board is locked by default
+            
+            const kanbanStages = ['Qualification', 'Proposal', 'Negotiation', 'Closed-Won', 'Closed-Lost'];
+
+
+            // --- UI ELEMENT SELECTORS ---
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const salesMenu = document.getElementById('salesMenu');
+            const profileNameEl = document.getElementById('profile-name');
+            const logoutBtn = document.getElementById('logout-btn');
+            const settingsBtn = document.getElementById('settings-btn');
+            const dealsTimeframeFilter = document.getElementById('deals-timeframe-filter');
+            const dealsSearchInput = document.getElementById('deals-search');
+            const kanbanBoard = document.getElementById('kanban-board');
+            const kanbanLockToggle = document.getElementById('kanban-lock-toggle');
+            
+            // --- NEW: CSV IMPORT SELECTORS ---
+            const importCsvBtn = document.getElementById('import-csv-btn');
+            const csvImportInput = document.getElementById('csv-import-input');
+
+            // Modals
+            const addLeadModal = document.getElementById('addLeadModal');
+            const addLeadForm = document.getElementById('addLeadForm');
+
+            // --- API HELPER ---
+            async function apiRequest(endpoint, method = 'GET', body = null) {
+                const headers = {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                };
+                const options = { method, headers };
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+                const response = await fetch(endpoint, options);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+                 if (response.status !== 204) { // 204 No Content has no body
+                    return response.json();
+                }
+            }
+
+            // --- DATA FETCHING FUNCTIONS ---
+            async function fetchOrgUsers(orgId) {
+                try {
+                    const users = await apiRequest(`/organization/users/${orgId}`);
+                    orgUsers = users.reduce((acc, user) => {
+                        acc[user.id] = user.name;
+                        return acc;
+                    }, {});
+                } catch (error) {
+                    console.error("Failed to fetch organization users:", error);
+                }
+            }
+            
+            async function fetchDeals() {
+                try {
+                    allDeals = await apiRequest(`/deals?timeframe=${currentDealsTimeframe}`);
+                    renderKanbanBoard();
+                } catch (error) {
+                    console.error("Failed to fetch deals:", error);
+                    kanbanBoard.innerHTML = `<p style="text-align:center; width: 100%;">${error.message}</p>`;
+                }
+            }
+
+            // --- UI RENDERING & MANAGEMENT FUNCTIONS ---
+            function renderKanbanBoard() {
+                kanbanBoard.innerHTML = '';
+                const searchTerm = dealsSearchInput.value.toLowerCase();
+                const visibleDeals = allDeals.filter(deal => 
+                    deal.name.toLowerCase().includes(searchTerm) ||
+                    (deal.organization_name && deal.organization_name.toLowerCase().includes(searchTerm)) ||
+                    (deal.lead_contact_name && deal.lead_contact_name.toLowerCase().includes(searchTerm))
+                );
+
+                kanbanStages.forEach(stage => {
+                    const column = document.createElement('div');
+                    column.className = 'kanban-column';
+                    column.dataset.stage = stage;
+                    const dealsInStage = visibleDeals.filter(deal => deal.stage === stage);
+                    
+                    column.innerHTML = `
+                        <div class="kanban-column-header">
+                           <span>${stage.replace(/-/g, ' ')}</span>
+                           <span class="count">${dealsInStage.length}</span>
+                        </div>
+                        <div class="kanban-cards"></div>`;
+                    
+                    const cardsContainer = column.querySelector('.kanban-cards');
+                    dealsInStage.forEach(deal => {
+                        const card = document.createElement('div');
+                        card.className = 'kanban-card';
+                        card.dataset.dealId = deal.id;
+                        card.draggable = !isKanbanLocked;
+                        card.innerHTML = `
+                            <h4>${deal.name}</h4>
+                            <p>${deal.organization_name || 'N/A'}</p>
+                            <div class="card-footer">
+                                <span class="card-value">$${(deal.value || 0).toLocaleString()}</span>
+                            </div>`;
+                        cardsContainer.appendChild(card);
+                    });
+                    kanbanBoard.appendChild(column);
+                });
+            }
+
+            // --- MODAL HANDLING ---
+            function openModal(modal) { modal.classList.add('visible'); }
+            function closeModal(modal) { modal.classList.remove('visible'); }
+
+            // --- EVENT HANDLERS ---
+            async function handleAddLead(e) {
+                e.preventDefault();
+                const newLeadData = {
+                    name: document.getElementById('newLeadName').value,
+                    organization: document.getElementById('newLeadOrganization').value,
+                    email: document.getElementById('newLeadEmail').value,
+                    phone: document.getElementById('newLeadPhone').value,
+                    status: document.getElementById('newLeadStatus').value,
+                    value: parseInt(document.getElementById('newLeadValue').value, 10) || null,
+                    notes: document.getElementById('newLeadNotes').value,
+                };
+                try {
+                    await apiRequest('/leads', 'POST', newLeadData);
+                    addLeadForm.reset();
+                    closeModal(addLeadModal);
+                    await fetchDeals(); // Refresh deals board
+                } catch (error) {
+                    alert(`Error creating lead: ${error.message}`);
+                }
+            }
+            
+            async function handleDealStageChange(dealId, newStage) {
+                const deal = allDeals.find(d => d.id === dealId);
+                if (!deal || deal.stage === newStage) return; 
+
+                try {
+                    await apiRequest(`/deals/${dealId}`, 'PUT', { stage: newStage });
+                    deal.stage = newStage;
+                    renderKanbanBoard();
+                } catch (error) {
+                    console.error(`Error updating deal stage: ${error.message}`);
+                    renderKanbanBoard(); 
+                }
+            }
+        
+            // --- INITIALIZATION ---
+            async function initializeApp() {
+                profileNameEl.textContent = userName;
+                
+                try {
+                    const settings = await apiRequest('/api/settings/details');
+                    if (settings.organization && settings.organization.id) {
+                        currentOrgId = settings.organization.id;
+                        await fetchOrgUsers(currentOrgId);
+                        await fetchDeals();
+                    } else {
+                        const errorMsg = `<p style="text-align:center; width: 100%;">You are not part of an organization. Please create or join one in Settings.</p>`;
+                        kanbanBoard.innerHTML = errorMsg;
+                    }
+                } catch (error) {
+                    console.error("Initialization failed:", error);
+                    const errorMsg = `<p style="text-align:center; width: 100%;">Error loading initial data: ${error.message}</p>`;
+                    kanbanBoard.innerHTML = errorMsg;
+                }
+            }
+
+            // --- EVENT LISTENERS ---
+            const logoImg = document.querySelector('.logo-img');
+            if (logoImg) {
+                logoImg.addEventListener('click', () => { window.location.href = '/'; });
+            }
+            
+            toggleBtn.addEventListener('click', () => { sidebar.classList.toggle('hidden'); toggleBtn.classList.toggle('visible'); });
+            // Sidebar dropdown + default navigation behavior
+            if (salesMenu) {
+                const salesItem = salesMenu.querySelector('.nav-item');
+                const salesArrow = salesMenu.querySelector('.dropdown-arrow');
+                salesItem.addEventListener('click', (e) => {
+                    if (salesArrow && (e.target === salesArrow || salesArrow.contains(e.target))) {
+                        e.stopPropagation();
+                        salesMenu.classList.toggle('open');
+                        return;
+                    }
+                    window.location.href = '/sales/pre-sales';
+                });
+            }
+            const crmMenu = document.getElementById('crmMenu');
+            if (crmMenu) {
+                crmMenu.classList.add('open');
+                const crmItem = crmMenu.querySelector('.nav-item');
+                const crmArrow = crmMenu.querySelector('.dropdown-arrow');
+                crmItem.addEventListener('click', (e) => {
+                    if (crmArrow && (e.target === crmArrow || crmArrow.contains(e.target))) {
+                        e.stopPropagation();
+                        crmMenu.classList.toggle('open');
+                        return;
+                    }
+                    window.location.href = '/mini-crm';
+                });
+            }
+            document.getElementById('crmMenu').addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('crmMenu').classList.toggle('open');
+            });
+            logoutBtn.addEventListener('click', () => { localStorage.removeItem('jwt_token'); window.location.href = '/auth'; });
+            settingsBtn.addEventListener('click', () => { window.location.href = '/settings'; });
+
+            dealsTimeframeFilter.addEventListener('change', (e) => { currentDealsTimeframe = e.target.value; fetchDeals(); });
+
+            kanbanLockToggle.addEventListener('change', () => {
+                isKanbanLocked = kanbanLockToggle.checked;
+                kanbanBoard.classList.toggle('kanban-locked', isKanbanLocked);
+                
+                document.querySelectorAll('.kanban-card').forEach(card => {
+                    card.draggable = !isKanbanLocked;
+                });
+            });
+
+            kanbanBoard.addEventListener('dragstart', (e) => {
+                if (isKanbanLocked) return;
+                if (e.target.classList.contains('kanban-card')) {
+                    e.target.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', e.target.dataset.dealId);
+                }
+            });
+
+            kanbanBoard.addEventListener('dragend', (e) => {
+                if (isKanbanLocked) return;
+                if (e.target.classList.contains('kanban-card')) {
+                    e.target.classList.remove('dragging');
+                }
+            });
+
+            kanbanBoard.addEventListener('dragover', (e) => {
+                if (isKanbanLocked) return;
+                e.preventDefault();
+                const column = e.target.closest('.kanban-column');
+                if (column) {
+                    column.classList.add('drag-over');
+                }
+            });
+
+            kanbanBoard.addEventListener('dragleave', (e) => {
+                 if (isKanbanLocked) return;
+                 const column = e.target.closest('.kanban-column');
+                if (column) {
+                    column.classList.remove('drag-over');
+                }
+            });
+
+            kanbanBoard.addEventListener('drop', (e) => {
+                if (isKanbanLocked) return;
+                e.preventDefault();
+                const column = e.target.closest('.kanban-column');
+                if (column) {
+                    column.classList.remove('drag-over');
+                    const dealId = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                    const newStage = column.dataset.stage;
+                    handleDealStageChange(dealId, newStage);
+                }
+            });
+            
+            dealsSearchInput.addEventListener('input', renderKanbanBoard);
+
+            document.getElementById('add-lead-main-btn').addEventListener('click', () => openModal(addLeadModal));
+            document.getElementById('closeAddModalBtn').addEventListener('click', () => closeModal(addLeadModal));
+            addLeadModal.addEventListener('click', (e) => { if(e.target === addLeadModal) closeModal(addLeadModal); });
+            addLeadForm.addEventListener('submit', handleAddLead);
+            
+            // --- NEW: CSV IMPORT EVENT LISTENERS ---
+            importCsvBtn.addEventListener('click', () => {
+                csvImportInput.click(); // Trigger the hidden file input
+            });
+
+            csvImportInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) {
+                    return; // User cancelled the dialog
+                }
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                // Show a loading indicator
+                const originalButtonContent = importCsvBtn.innerHTML;
+                importCsvBtn.textContent = 'Importing...';
+                importCsvBtn.disabled = true;
+
+                try {
+                    const response = await fetch('/leads/import', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                            // NOTE: Do NOT set Content-Type header. The browser does it for you with FormData.
+                        },
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.message || 'Failed to upload file.');
+                    }
+
+                    alert(result.message); // Show success message
+                    await fetchDeals(); // Refresh the deals board
+
+                } catch (error) {
+                    console.error('CSV Import Error:', error);
+                    alert(`Error: ${error.message}`);
+                } finally {
+                    // Reset button and file input
+                    importCsvBtn.innerHTML = originalButtonContent;
+                    importCsvBtn.disabled = false;
+                    csvImportInput.value = ''; // Allows selecting the same file again
+                }
+            });
+
+
+            initializeApp();
+        });
+    </script>
+</body>
+</html>

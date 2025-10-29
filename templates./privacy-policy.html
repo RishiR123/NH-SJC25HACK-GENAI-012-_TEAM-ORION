@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Privacy Policy for SalesOS - Understand how we collect, use, and protect your data.">
+    
+    <!-- OpenGraph tags for social sharing -->
+    <meta property="og:title" content="Privacy Policy - SalesOS">
+    <meta property="og:description" content="Understand how we collect, use, and protect your data.">
+    <meta property="og:image" content="https://placehold.co/1200x630/0B0B10/7C3AED?text=Privacy%20Policy">
+    <meta property="og:type" content="website">
+
+    <title>Privacy Policy - SalesOS</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts: Space Grotesk (Headlines) & Inter (Body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons (for chat widget, etc.) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        /*
+        Color Palette:
+        Obsidian: #0B0B10
+        Violet: #7C3AED
+        Magenta: #EC4899
+        */
+
+        :root {
+            --violet: #7C3AED;
+            --magenta: #EC4899;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0B0B10;
+            color: #d1d5db; /* text-gray-300 */
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Background Textures */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: 
+                /* Faint Grid */
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.5;
+            z-index: -2;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            /* Top radial glow */
+            background: radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.15), transparent 60%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .font-grotesk {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Glassmorphism Card Style */
+        .glass-card {
+            background-color: rgba(22, 22, 30, 0.3); /* Dark glass */
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Neon Glow Button (Violet) */
+        .glow-button-violet {
+            background-color: var(--violet);
+            color: white;
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.5), 0 0 30px rgba(124, 58, 237, 0.3);
+            transition: all 0.3s ease-in-out;
+        }
+        .glow-button-violet:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(124, 58, 237, 0.8), 0 0 45px rgba(124, 58, 237, 0.5);
+        }
+        
+        /* Neon Glow Button (Magenta) */
+        .glow-button-magenta {
+            background-color: var(--magenta);
+            color: white;
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.5), 0 0 30px rgba(236, 72, 153, 0.3);
+            transition: all 0.3s ease-in-out;
+        }
+        .glow-button-magenta:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(236, 72, 153, 0.8), 0 0 45px rgba(236, 72, 153, 0.5);
+        }
+
+        /* Custom styles for policy page */
+        .policy-content h2 {
+            @apply font-grotesk text-3xl font-bold text-white mt-16 mb-6; /* Increased mt and mb */
+        }
+        .policy-content h3 {
+            @apply font-grotesk text-xl font-semibold text-white mt-10 mb-4; /* Increased mt and mb */
+        }
+        /* Base paragraph text */
+        .policy-content p {
+            @apply text-base text-gray-400 leading-relaxed mb-4; /* Added mb-4 */
+        }
+        /* List items brighter for differentiation */
+        .policy-content li {
+            @apply text-base text-gray-300 leading-relaxed;
+        }
+        /* Make strong tags pop */
+        .policy-content p strong, .policy-content li strong {
+            @apply text-gray-100 font-medium; /* Brighter than li text */
+        }
+        .policy-content ul {
+            @apply list-disc list-inside space-y-3 mt-4 mb-6; /* Increased space-y and added mb-6 */
+        }
+        .policy-content a {
+            @apply text-violet hover:underline;
+        }
+        .policy-recommendation {
+            @apply bg-dark-glass border border-magenta/50 rounded-lg p-6 mt-8 mb-8; /* Changed border, added margins */
+        }
+        .policy-recommendation h3 {
+            @apply text-magenta !mt-0; /* Changed color to match border */
+        }
+        /* Ensure intro paragraph is styled correctly */
+        .policy-content > p:first-of-type {
+            @apply text-lg text-gray-300 mb-6; /* Added mb-6 */
+        }
+
+
+    </style>
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: '#0B0B10',
+                        violet: '#7C3AED',
+                        magenta: '#EC4899',
+                        'dark-glass': 'rgba(22, 22, 30, 0.3)',
+                        'dark-border': 'rgba(255, 255, 255, 0.08)',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                        grotesk: ['Space Grotesk', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="antialiased overflow-x-hidden">
+
+    <!-- Header -->
+    <header id="main-header" class="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl transition-all duration-300">
+        <nav class="flex items-center justify-between glass-card rounded-full p-2 md:p-3 shadow-lg">
+            <!-- Logo -->
+            <a href="index.html" class="flex items-center space-x-2 pl-3" aria-label="SalesOS Home">
+                <img src="/static/logo.png"
+                     alt="SalesOS Logo"
+                     class="h-7 w-auto"
+                     onerror="this.onerror=null;this.src='https://placehold.co/120x28/050507/C0FF6B?text=SalesOS&font=inter';">
+            </a>
+
+            <!-- Desktop Nav -->
+            <div class="hidden md:flex space-x-6 text-gray-300 items-center text-sm font-medium">
+                <a id="nav-problem" href="index.html#problem" class="hover:text-violet transition-colors" aria-label="Scroll to The Problem">The Problem</a>
+                <a id="nav-collaboration" href="index.html#collaboration" class="hover:text-violet transition-colors" aria-label="Scroll to Synergy">Synergy</a>
+                <a id="nav-features" href="index.html#features" class="hover:text-violet transition-colors" aria-label="Scroll to Features">Features</a>
+                <!-- Active link for Privacy Policy -->
+                <a id="nav-privacy" href="privacy-policy.html" class="text-violet font-bold" aria-label="Privacy Policy">Privacy Policy</a>
+                <a id="nav-roi" href="index.html#roi" class="hover:text-violet transition-colors" aria-label="Scroll to ROI Calculator">ROI</a>
+            </div>
+
+            <!-- CTA -->
+            <a href="https://salesos.orionac.in/auth" class="glow-button-violet text-sm font-semibold px-5 py-2.5 rounded-full" aria-label="Start Free Trial">
+                Start Free Trial
+            </a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="py-20 md:py-32">
+            <div class="container mx-auto px-4 max-w-4xl">
+                <div class="text-center mb-12">
+                     <h1 class="text-4xl md:text-6xl font-bold text-white mb-4">Privacy Policy for OrionAC - SalesOS</h1>
+                     <p class="text-lg text-[#D5D5D5]/80">Effective Date: 25/09/2025</p>
+                </div>
+                
+                <div class="glass-card rounded-2xl p-8 md:p-12">
+                    <p class="text-lg text-[#D5D5D5]/80 leading-relaxed">OrionAC (“we,” “our,” or “the Company”) respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, share, and secure information when you connect your email or other accounts to our product, SalesOS, for sales automation purposes.</p>
+
+                    <h2 id="data-collection" class="text-2xl md:text-3xl font-bold text-white mt-12 mb-4">1. Data We Collect and How We Use It</h2>
+                    <p class="text-lg text-[#D5D5D5]/80 leading-relaxed">When you use SalesOS, we may collect:</p>
+                    <ul class="list-disc list-inside space-y-2 mt-4">
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed"><strong>Account Information:</strong> Email addresses, account identifiers, and authentication tokens.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed"><strong>Email Content & Metadata:</strong> Subject lines, sender/recipient information, timestamps, and other relevant content needed for automation.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed"><strong>Contacts & Calendars:</strong> Only if required for sending or scheduling communications.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed"><strong>Device & Usage Data:</strong> IP addresses, device type, location (if necessary), and platform usage metrics.</li>
+                    </ul>
+                    <h3 class="text-xl font-semibold text-white/90 mt-8 mb-3">Purpose:</h3>
+                    <p class="text-lg text-[#D5D5D5]/80 leading-relaxed">We use this data to:</p>
+                    <ul class="list-disc list-inside space-y-2 mt-4">
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Automate sales emails, follow-ups, and other communications.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Provide analytics and performance insights.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Prevent fraud, spam, and abuse.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Improve and maintain SalesOS.</li>
+                    </ul>
+                    <div class="bg-black/20 border border-[#C0FF6B]/30 rounded-lg p-6 mt-6">
+                        <h3 class="text-xl font-semibold text-white/90 mb-3 !mt-0">Recommendation:</h3>
+                        <p class="text-lg text-[#D5D5D5]/80 leading-relaxed">For safety and privacy, we strongly advise creating a dedicated account for SalesOS. Avoid using personal or sensitive email accounts. This ensures your main email remains private and reduces risk.</p>
+                    </div>
+
+                    <h2 id="consent-control" class="text-2xl md:text-3xl font-bold text-white mt-12 mb-4">2. User Consent & Control</h2>
+                    <ul class="list-disc list-inside space-y-2 mt-4">
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">You must provide explicit consent before SalesOS can access any connected account.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Consent is granular—you can choose which actions SalesOS is allowed to perform (e.g., read inbox, send emails, access contacts).</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">You can revoke or modify permissions at any time via your account settings.</li>
+                    </ul>
+
+                    <h2 id="data-sharing" class="text-2xl md:text-3xl font-bold text-white mt-12 mb-4">3. Sharing Your Data</h2>
+                    <ul class="list-disc list-inside space-y-2 mt-4">
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">We do not sell your data.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Data may be shared with trusted third-party services (e.g., analytics, cloud storage) only to provide SalesOS functionality.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">We ensure safeguards like encryption, limited access, and contracts to protect your data.</li>
+                    </ul>
+
+                    <h2 id="security" class="text-2xl md:text-3xl font-bold text-white mt-12 mb-4">4. Security of Your Data</h2>
+                    <ul class="list-disc list-inside space-y-2 mt-4">
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">We use encryption in transit and at rest.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Strict access controls and monitoring protect your data.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">In case of a breach, we will notify you promptly.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">We comply with security standards required by connected services (e.g., Gmail, Outlook).</li>
+                    </ul>
+
+                    <h2 id="automation-ai" class="text-2xl md:text-3xl font-bold text-white mt-12 mb-4">5. Automated Actions & AI</h2>
+                    <ul class="list-disc list-inside space-y-2 mt-4">
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">SalesOS automates email sending, scheduling, and follow-ups.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Some features use AI to optimize messaging and timing.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">You can opt out of automation for specific tasks at any time.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Automated actions comply with service provider rules to prevent spam or abuse.</li>
+                    </ul>
+
+                    <h2 id="retention-deletion" class="text-2xl md:text-3xl font-bold text-white mt-12 mb-4">6. Data Retention & Deletion</h2>
+                    <ul class="list-disc list-inside space-y-2 mt-4">
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">We retain data only as long as needed for SalesOS functionality.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">When you delete your account or disconnect a service, your data will be removed upon request.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">You can request deletion of your data at any time through your account settings or by contacting support.</li>
+                    </ul>
+
+                    <h2 id="compliance" class="text-2xl md:text-3xl font-bold text-white mt-12 mb-4">7. Regulatory Compliance</h2>
+                    <ul class="list-disc list-inside space-y-2 mt-4">
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">OrionAC and SalesOS comply with GDPR, CCPA, and applicable local laws.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">We follow API policies of connected services, including Gmail, Outlook, and others.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Security assessments are conducted as required by service providers.</li>
+                    </ul>
+                    
+                    <h2 id="consent-management" class="text-2xl md:text-3xl font-bold text-white mt-12 mb-4">8. Consent Management</h2>
+                    <ul class="list-disc list-inside space-y-2 mt-4">
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Every integration request clearly explains what access is needed.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">A centralized consent management portal lets you view, update, or revoke permissions across all connected services.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Preferences are updated in real-time.</li>
+                    </ul>
+
+                    <h2 id="risks-recommendations" class="text-2xl md:text-3xl font-bold text-white mt-12 mb-4">9. Risks & User Recommendations</h2>
+                    <ul class="list-disc list-inside space-y-2 mt-4">
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Using SalesOS involves linking accounts and granting access.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Risks include potential misuse if accounts are shared or compromised.</li>
+                    </ul>
+                     <div class="bg-black/20 border border-[#C0FF6B]/30 rounded-lg p-6 mt-6">
+                        <h3 class="text-xl font-semibold text-white/90 mb-3 !mt-0">Best Practice:</h3>
+                        <p class="text-lg text-[#D5D5D5]/80 leading-relaxed">Use a dedicated email account for SalesOS and avoid using personal accounts. Enable strong authentication (like 2FA) on all linked accounts.</p>
+                    </div>
+
+                    <h2 id="your-rights" class="text-2xl md:text-3xl font-bold text-white mt-12 mb-4">10. Your Rights</h2>
+                    <p class="text-lg text-[#D5D5D5]/80 leading-relaxed">You have the right to:</p>
+                    <ul class="list-disc list-inside space-y-2 mt-4">
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Access, correct, or delete your data.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Port your data to another service.</li>
+                        <li class="text-lg text-[#D5D5D5]/80 leading-relaxed">Receive updates on any changes to this Privacy Policy.</li>
+                    </ul>
+
+                    <h2 id="policy-changes" class="text-2xl md:text-3xl font-bold text-white mt-12 mb-4">11. Changes to This Policy</h2>
+                    <p class="text-lg text-[#D5D5D5]/80 leading-relaxed">We may update this Privacy Policy occasionally. Changes will be communicated via email and posted on the Platform.</p>
+
+                    <h2 id="contact" class="text-2xl md:text-3xl font-bold text-white mt-12 mb-4">Contact Us</h2>
+                    <p class="text-lg text-[#D5D5D5]/80 leading-relaxed">If you have questions or wish to exercise your data rights, contact:</p>
+                    <p class="text-lg text-[#D5D5D5]/80 leading-relaxed"><strong>Email:</strong> <a href="mailto:support@orionac.com" class="text-[#C0FF6B] hover:underline">support@orionac.com</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-16 border-t border-dark-border">
+        <div class="container mx-auto px-4 max-w-7xl text-center">
+            <a href="index.html" class="inline-block mb-6" aria-label="SalesOS Home">
+                <img src="/static/logo.png"
+                     alt="SalesOS Logo"
+                     class="h-7 w-auto mx-auto"
+                     onerror="this.onerror=null;this.src='https://placehold.co/120x28/050507/C0FF6B?text=SalesOS&font=inter';">
+            </a>
+            <p class="text-gray-400 text-sm max-w-xs mx-auto mb-6">The AI co-pilot for high-performance sales teams.</p>
+            <p class="text-gray-500 text-sm">&copy; 2025 SalesOS. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Header Scroll Effect ---
+            const header = document.getElementById('main-header');
+            if (header) {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 10) {
+                        // Using a class that's defined in the tailwind.config
+                        header.classList.add('bg-dark-glass');
+                    } else {
+                        header.classList.remove('bg-dark-glass');
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>
+
+

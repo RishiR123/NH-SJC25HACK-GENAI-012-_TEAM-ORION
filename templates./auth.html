@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SalesOS - Login & Sign Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Theme styles adapted from index.html */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #EAD9FF 0%, #FBE8F3 100%);
+            color: #334155; /* Dark Slate for primary text */
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .main-container-animate {
+            animation: fadeIn 0.7s ease-in-out forwards;
+        }
+        
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .accent-button {
+            background-color: #7C3AED; /* Deep Purple */
+            color: #FFFFFF;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+        .accent-button:hover {
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+            transform: scale(1.02);
+        }
+        
+        .form-wrapper {
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+        }
+        .form-hidden {
+            opacity: 0;
+            transform: translateX(20px);
+            pointer-events: none;
+            position: absolute;
+            width: 100%;
+        }
+        
+        .input-group { position: relative; }
+        .input-field {
+            border: 1px solid #d1d5db;
+            background-color: rgba(255, 255, 255, 0.5);
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            color: #334155;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #7C3AED;
+            box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+        }
+        .input-label {
+            position: absolute;
+            left: 1rem;
+            top: 1rem;
+            color: #64748B;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            background-color: #f1e9fc; /* A color that matches the gradient to hide the line */
+            padding: 0 0.25rem;
+        }
+        .input-field:focus + .input-label,
+        .input-field:not(:placeholder-shown) + .input-label {
+            top: -0.65rem;
+            left: 0.75rem;
+            font-size: 0.8rem;
+            color: #7C3AED;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #94a3b8;
+        }
+        .password-toggle:hover { color: #7C3AED; }
+
+        /* Image Slider Styles */
+        .image-slider-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            border-radius: 0.75rem; /* rounded-xl */
+        }
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1.2s ease-in-out;
+        }
+        .slide.active {
+            opacity: 1;
+        }
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .slide-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2.5rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            color: white;
+        }
+        .slider-dots {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.75rem;
+        }
+        .dot {
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 9999px;
+            background-color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .dot.active {
+            background-color: #FFFFFF;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <main class="w-full max-w-5xl min-h-[700px] grid grid-cols-1 md:grid-cols-2 bg-transparent rounded-2xl overflow-hidden main-container-animate gap-8">
+        
+        <div class="w-full p-8 sm:p-12 flex flex-col justify-center relative glass-card rounded-2xl">
+            <div class="text-center mb-8">
+    <a href="/" class="inline-block">
+        <h1 class="text-4xl font-extrabold">
+            <span class="text-white">Sales</span><span class="text-[#7C3AED]">OS</span>
+        </h1>
+    </a>
+</div>
+
+        
+            <div id="auth-tabs" class="flex border-b border-slate-300 mb-8">
+                <button id="show-login-btn" class="flex-1 py-2 text-center font-semibold text-[#7C3AED] border-b-2 border-[#7C3AED] focus:outline-none transition-colors duration-300">Sign In</button>
+                <button id="show-register-btn" class="flex-1 py-2 text-center font-semibold text-slate-500 hover:text-slate-800 focus:outline-none transition-colors duration-300">Sign Up</button>
+            </div>
+
+            <div id="message-area" class="text-center text-sm font-medium mb-4 h-5"></div>
+
+            <div class="relative flex-grow">
+                <div id="login-form-container" class="form-wrapper">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-slate-800">Welcome Back</h2>
+                        <p class="mt-2 text-sm text-slate-500">Sign in to continue your journey.</p>
+                    </div>
+                    <form id="login-form" class="space-y-6">
+                        <div class="input-group">
+                            <input id="login-email" name="email" type="email" autocomplete="email" required placeholder=" " class="input-field">
+                            <label for="login-email" class="input-label">Email address</label>
+                        </div>
+                        <div class="input-group">
+                            <input id="login-password" name="password" type="password" autocomplete="current-password" required placeholder=" " class="input-field">
+                            <label for="login-password" class="input-label">Password</label>
+                            <span class="password-toggle">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            </span>
+                        </div>
+                        <button type="submit" class="w-full py-3 px-4 text-md font-bold rounded-lg accent-button">SIGN IN</button>
+                    </form>
+                </div>
+                
+                <div id="register-form-container" class="form-wrapper form-hidden">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-slate-800">Create Account</h2>
+                        <p class="mt-2 text-sm text-slate-500">Get started in seconds.</p>
+                    </div>
+                    <form id="register-form" class="space-y-6">
+                        <div class="input-group">
+                            <input id="register-username" name="username" type="text" required placeholder=" " class="input-field">
+                            <label for="register-username" class="input-label">Username</label>
+                        </div>
+                        <div class="input-group">
+                            <input id="register-email" name="email" type="email" autocomplete="email" required placeholder=" " class="input-field">
+                            <label for="register-email" class="input-label">Email address</label>
+                        </div>
+                        <div class="input-group">
+                            <input id="register-password" name="password" type="password" autocomplete="new-password" required placeholder=" " class="input-field">
+                            <label for="register-password" class="input-label">Password</label>
+                             <span class="password-toggle">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            </span>
+                        </div>
+                        <button type="submit" class="w-full py-3 px-4 text-md font-bold rounded-lg accent-button">CREATE ACCOUNT</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="hidden md:block relative">
+            <div class="image-slider-container">
+                <div class="slide active">
+                    <img src="https://placehold.co/1080/1920/7C3AED/FFFFFF?text=Welcome" alt="Slider Image 1"  onerror="this.onerror=null;this.src='https://placehold.co/1080x1920/7C3AED/FFFFFF?text=Welcome';">
+                    <div class="slide-content">
+                        <h2 class="text-2xl font-bold mb-2">Scale Sales. Without Hiring.</h2>
+                        <p>Meet the AI that works like a 10-person sales team, 24/7.</p>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="https://placehold.co/1080/1920/EC4899/FFFFFF?text=Automate" alt="Slider Image 2" onerror="this.onerror=null;this.src='https://placehold.co/1080x1920/EC4899/FFFFFF?text=Automate';">
+                    <div class="slide-content">
+                        <h2 class="text-2xl font-bold mb-2">AI Superpowers for Sales</h2>
+                        <p>Automate the tasks you hate, so you can focus on what you love: closing deals.</p>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="https://placehold.co/1080/1920/334155/FFFFFF?text=Integrate" alt="Slider Image 3" onerror="this.onerror=null;this.src='https://placehold.co/1080x1920/334155/FFFFFF?text=Integrate';">
+                         <div class="slide-content">
+                            <h2 class="text-2xl font-bold mb-2">AI Workflows in Plain English</h2>
+                            <p>Just tell our AI what to do and watch the automation build itself.</p>
+                        </div>
+                </div>
+            </div>
+            <div class="slider-dots">
+                <span class="dot active"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('jwt_token');
+
+            function parseJwt(token) {
+                try {
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    return JSON.parse(jsonPayload);
+                } catch (e) { return null; }
+            }
+
+            // --- Form Logic Elements ---
+            const showLoginBtn = document.getElementById('show-login-btn');
+            const showRegisterBtn = document.getElementById('show-register-btn');
+            const loginFormContainer = document.getElementById('login-form-container');
+            const registerFormContainer = document.getElementById('register-form-container');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const messageArea = document.getElementById('message-area');
+            const passwordToggles = document.querySelectorAll('.password-toggle');
+            const authTabs = document.getElementById('auth-tabs');
+            
+            const showMessage = (message, isError = false) => {
+                messageArea.textContent = message;
+                messageArea.className = isError 
+                    ? 'text-center text-sm font-medium text-red-500' 
+                    : 'text-center text-sm font-medium text-green-600';
+            };
+
+            const showFormView = (view) => {
+                loginFormContainer.classList.toggle('form-hidden', view !== 'login');
+                registerFormContainer.classList.toggle('form-hidden', view !== 'register');
+                
+                showLoginBtn.classList.toggle('text-[#7C3AED]', view === 'login');
+                showLoginBtn.classList.toggle('border-[#7C3AED]', view === 'login');
+                showRegisterBtn.classList.toggle('text-[#7C3AED]', view === 'register');
+                showRegisterBtn.classList.toggle('border-[#7C3AED]', view === 'register');
+            };
+            
+            const handleApiRequest = async (endpoint, payload, button, method = 'POST', customHeaders = {}) => {
+                const originalText = button ? button.innerHTML : '';
+                if (button) {
+                    button.disabled = true;
+                    button.innerHTML = `<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>`;
+                }
+
+                const headers = { 'Content-Type': 'application/json', ...customHeaders };
+
+                try {
+                    const response = await fetch(endpoint, {
+                        method: method,
+                        headers: headers,
+                        body: JSON.stringify(payload),
+                    });
+                    const result = await response.json();
+                    if (!response.ok) {
+                        showMessage(result.message || 'An unknown error occurred.', true);
+                        return { ok: false, data: result };
+                    }
+                    return { ok: true, data: result };
+                } catch (error) {
+                    showMessage('Could not connect to the server.', true);
+                    return { ok: false, data: { message: 'Network error' } };
+                } finally {
+                    if (button) {
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                    }
+                }
+            };
+            
+            async function handleLoggedInInvite(inviteToken, jwtToken) {
+                // Hide forms and show a processing message
+                loginFormContainer.classList.add('form-hidden');
+                registerFormContainer.classList.add('form-hidden');
+                authTabs.style.display = 'none';
+                showMessage('You are logged in. Accepting invitation...', false);
+                
+                const headers = { 'Authorization': `Bearer ${jwtToken}` };
+                const payload = { 'invite_token': inviteToken };
+                
+                const { ok, data } = await handleApiRequest('/organization/join', payload, null, 'POST', headers);
+
+                if (ok) {
+                    showMessage('Successfully joined organization! Redirecting...', false);
+                } else {
+                    // Show error, then redirect anyway as they are already logged in
+                    showMessage(data.message || 'Could not join organization.', true);
+                }
+                setTimeout(() => { window.location.href = '/space'; }, 2000);
+            }
+
+            // --- INITIALIZATION LOGIC ---
+            const urlParams = new URLSearchParams(window.location.search);
+            const inviteToken = urlParams.get('invite_token');
+
+            if (inviteToken && token) {
+                // SCENARIO 1: User is already logged in and clicks an invite link.
+                handleLoggedInInvite(inviteToken, token);
+                return; // Stop further execution
+            }
+
+            // SCENARIO 2: User has an expired/invalid token, remove it.
+            if (token) {
+                const payload = parseJwt(token);
+                const isExpired = !payload || Date.now() >= payload.exp * 1000;
+                if (isExpired) {
+                    localStorage.removeItem('jwt_token');
+                } else {
+                    window.location.href = '/space';
+                    return; // Valid session, redirect away.
+                }
+            }
+            
+            // SCENARIO 3: New user clicks an invite link.
+            if (inviteToken) {
+                localStorage.setItem('invite_token', inviteToken);
+                showMessage("You've been invited! Please create an account to join.", false);
+                showFormView('register');
+                showLoginBtn.style.display = 'none';
+                showRegisterBtn.classList.add('flex-grow');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
+            // --- EVENT LISTENERS ---
+            passwordToggles.forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const passwordInput = toggle.closest('.input-group').querySelector('input');
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    toggle.classList.toggle('text-[#7C3AED]');
+                });
+            });
+
+            showLoginBtn.addEventListener('click', () => showFormView('login'));
+            showRegisterBtn.addEventListener('click', () => showFormView('register'));
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showMessage('');
+                const formData = Object.fromEntries(new FormData(loginForm).entries());
+                const button = loginForm.querySelector('button[type="submit"]');
+                const { ok, data } = await handleApiRequest('/login', formData, button);
+                if (ok && data.token) {
+                    showMessage('Login successful! Redirecting...', false);
+                    localStorage.setItem('jwt_token', data.token);
+                    setTimeout(() => { window.location.href = '/mini-crm/leads'; }, 1000);
+                }
+            });
+
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showMessage('');
+                const formData = Object.fromEntries(new FormData(registerForm).entries());
+                const button = registerForm.querySelector('button[type="submit"]');
+                
+                const regResult = await handleApiRequest('/register', formData, button);
+                if (!regResult.ok) return;
+
+                const { onboarding_token, user_id } = regResult.data;
+                const currentInviteToken = localStorage.getItem('invite_token');
+
+                if (currentInviteToken) {
+                    showMessage('Account created! Joining organization...', false);
+                    const inviteHeaders = { 'Authorization': `Bearer ${onboarding_token}` };
+                    const invitePayload = { 'invite_token': currentInviteToken };
+                    const acceptResult = await handleApiRequest('/organization/accept_invite', invitePayload, button, 'POST', inviteHeaders);
+
+                    if (acceptResult.ok && acceptResult.data.token) {
+                        showMessage('Successfully joined organization! Redirecting...', false);
+                        localStorage.clear();
+                        localStorage.setItem('jwt_token', acceptResult.data.token);
+                        setTimeout(() => { window.location.href = '/space'; }, 1500);
+                    } else {
+                        showMessage('Could not join organization. Proceeding with standard setup.', true);
+                        localStorage.setItem('onboarding_user_id', user_id);
+                        localStorage.setItem('onboarding_token', onboarding_token);
+                        localStorage.removeItem('invite_token');
+                        setTimeout(() => { window.location.href = '/onboarding'; }, 2000);
+                    }
+                } else {
+                    localStorage.setItem('onboarding_user_id', user_id);
+                    localStorage.setItem('onboarding_token', onboarding_token);
+                    showMessage(regResult.data.message, false);
+                    setTimeout(() => { window.location.href = '/onboarding'; }, 1000);
+                }
+            });
+
+             // --- Image Slider Logic ---
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.dot');
+            if (slides.length > 0) {
+                let currentSlide = 0;
+                let slideInterval = setInterval(nextSlide, 5000);
+                function showSlide(index) {
+                    slides.forEach((slide, i) => slide.classList.toggle('active', i === index));
+                    dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+                    currentSlide = index;
+                }
+                function nextSlide() {
+                    showSlide((currentSlide + 1) % slides.length);
+                }
+                dots.forEach((dot, index) => {
+                    dot.addEventListener('click', () => {
+                        showSlide(index);
+                        clearInterval(slideInterval);
+                        slideInterval = setInterval(nextSlide, 5000);
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

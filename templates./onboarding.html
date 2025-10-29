@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SalesOS - Complete Setup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #EAD9FF 0%, #FBE8F3 100%);
+            color: #334155;
+            overflow: hidden;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInFromRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideOutToLeft {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(-30px); }
+        }
+
+        .main-container-animate {
+            animation: fadeIn 0.7s ease-in-out forwards;
+        }
+        .animate-slide-in {
+            animation: slideInFromRight 0.5s ease-out forwards;
+        }
+        .animate-slide-out {
+            animation: slideOutToLeft 0.5s ease-in forwards;
+        }
+
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px
+            20px rgba(0, 0, 0, 0.05);
+        }
+        .accent-button {
+            background-color: #7C3AED;
+            color: #FFFFFF;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+        .accent-button:hover {
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+            transform: translateY(-2px);
+        }
+        .secondary-button {
+            background-color: transparent;
+            color: #7C3AED;
+            font-weight: 700;
+            border: 2px solid #7C3AED;
+            transition: all 0.3s ease;
+        }
+        .secondary-button:hover {
+            background-color: rgba(124, 58, 237, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-wrapper {
+            position: absolute;
+            width: 100%;
+            top: 0;
+        }
+        .form-hidden {
+            display: none;
+        }
+        
+        .input-group { position: relative; }
+        .input-field {
+            border: 1px solid #d1d5db;
+            background-color: rgba(255, 255, 255, 0.5);
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            color: #334155;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #7C3AED;
+            box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+        }
+        .input-label {
+            position: absolute;
+            left: 1rem;
+            top: 1rem;
+            color: #64748B;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            background-color: #f1e9fc;
+            padding: 0 0.25rem;
+        }
+        .input-field:focus + .input-label,
+        .input-field:not(:placeholder-shown) + .input-label {
+            top: -0.65rem;
+            left: 0.75rem;
+            font-size: 0.8rem;
+            color: #7C3AED;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <main class="w-full max-w-lg min-h-[550px] bg-transparent rounded-2xl overflow-hidden main-container-animate glass-card">
+        
+        <div class="w-full p-8 sm:p-12 flex flex-col justify-center relative">
+            <div class="text-center mb-6">
+                <a href="/" class="inline-block">
+                     <img src="{{ url_for('static', filename='logo.png') }}" alt="SalesOS Logo" class="h-16 w-auto mx-auto transition-transform duration-300 hover:scale-105">
+                </a>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
+                <div id="progress-bar" class="bg-purple-600 h-2 rounded-full transition-all duration-500 ease-out" style="width: 50%"></div>
+            </div>
+            <div class="flex justify-between text-xs font-semibold text-gray-500 mb-6">
+                <span id="step-1-text" class="text-purple-700">Your Profile</span>
+                <span id="step-2-text">Organization</span>
+            </div>
+        
+            <div id="message-area" class="text-center text-sm font-medium mb-4 h-5"></div>
+
+            <div class="relative min-h-[300px] overflow-hidden">
+               
+                <!-- Step 1: Complete Profile Form -->
+                <div id="complete-profile-form-container" class="form-wrapper">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-slate-800">Almost There!</h2>
+                        <p class="mt-2 text-sm text-slate-500">Tell us a bit more about yourself.</p>
+                    </div>
+                    <form id="complete-profile-form" class="space-y-6">
+                        <div class="input-group">
+                            <input id="first-name" name="first_name" type="text" required placeholder=" " class="input-field">
+                            <label for="first-name" class="input-label">First Name</label>
+                        </div>
+                        <div class="input-group">
+                            <input id="last-name" name="last_name" type="text" required placeholder=" " class="input-field">
+                            <label for="last-name" class="input-label">Last Name</label>
+                        </div>
+                        <button type="submit" class="w-full py-3 px-4 text-md font-bold rounded-lg accent-button">CONTINUE</button>
+                    </form>
+                </div>
+
+                <!-- Step 2: Organization Choice -->
+                <div id="organization-choice-container" class="form-wrapper form-hidden">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-slate-800">Join a Team</h2>
+                        <p class="mt-2 text-sm text-slate-500">How would you like to set up your organization?</p>
+                    </div>
+                    <div class="space-y-4">
+                        <button id="show-create-org-btn" type="button" class="w-full py-3 px-4 text-md font-bold rounded-lg accent-button">CREATE AN ORGANIZATION</button>
+                        <button id="show-join-info-btn" type="button" class="w-full py-3 px-4 text-md font-bold rounded-lg secondary-button">JOIN AN ORGANIZATION</button>
+                    </div>
+                </div>
+
+
+                <!-- Step 3a: Create Organization Form -->
+                <div id="create-organization-form-container" class="form-wrapper form-hidden">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-slate-800">Set Up Your Team</h2>
+                        <p class="mt-2 text-sm text-slate-500">Create your organization to get started.</p>
+                    </div>
+                    <form id="create-organization-form" class="space-y-6">
+                        <div class="input-group">
+                            <input id="org-name" name="name" type="text" required placeholder=" " class="input-field">
+                            <label for="org-name" class="input-label">Organization Name</label>
+                        </div>
+                        <div class="input-group">
+                            <input id="org-website" name="website" type="url" placeholder=" " class="input-field">
+                            <label for="org-website" class="input-label">Website (Optional)</label>
+                        </div>
+                        <button type="submit" class="w-full py-3 px-4 text-md font-bold rounded-lg accent-button">CREATE & SIGN IN</button>
+                    </form>
+                </div>
+                
+                <!-- Step 3b: Join Info -->
+                <div id="join-info-container" class="form-wrapper form-hidden">
+                    <div class="text-center">
+                        <svg class="mx-auto h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h2 class="mt-4 text-3xl font-bold text-slate-800">You're All Set!</h2>
+                        <p class="mt-2 text-md text-slate-600">Your account is ready. To join an organization, please ask your administrator for an invitation link. You can now close this page.</p>
+                         <a href="/" class="mt-8 inline-block w-full py-3 px-4 text-md font-bold rounded-lg secondary-button">GO TO HOMEPAGE</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Form Containers
+            const containers = {
+                profile: document.getElementById('complete-profile-form-container'),
+                choice: document.getElementById('organization-choice-container'),
+                create: document.getElementById('create-organization-form-container'),
+                join: document.getElementById('join-info-container'),
+            };
+
+            // Forms & Buttons
+            const completeProfileForm = document.getElementById('complete-profile-form');
+            const createOrganizationForm = document.getElementById('create-organization-form');
+            const showCreateBtn = document.getElementById('show-create-org-btn');
+            const showJoinBtn = document.getElementById('show-join-info-btn');
+
+            // UI Elements
+            const messageArea = document.getElementById('message-area');
+            const progressBar = document.getElementById('progress-bar');
+            const step1Text = document.getElementById('step-1-text');
+            const step2Text = document.getElementById('step-2-text');
+
+            // Credentials
+            const onboardingUserId = localStorage.getItem('onboarding_user_id');
+            const onboardingToken = localStorage.getItem('onboarding_token');
+
+            if (!onboardingUserId || !onboardingToken) {
+                window.location.href = '/auth';
+                return;
+            }
+
+            const showMessage = (message, isError = false) => {
+                messageArea.textContent = message;
+                messageArea.className = `text-center text-sm font-medium ${isError ? 'text-red-500' : 'text-green-600'}`;
+            };
+
+            const switchView = (from, to) => {
+                const fromEl = containers[from];
+                const toEl = containers[to];
+                
+                if (fromEl) {
+                    fromEl.classList.add('animate-slide-out');
+                    setTimeout(() => {
+                        fromEl.classList.add('form-hidden');
+                        fromEl.classList.remove('animate-slide-out');
+                    }, 500);
+                }
+
+                setTimeout(() => {
+                    toEl.classList.remove('form-hidden');
+                    toEl.classList.add('animate-slide-in');
+                }, fromEl ? 500 : 0);
+            };
+            
+            const updateProgress = (step) => {
+                 if (step === 'choice') {
+                    progressBar.style.width = '50%';
+                    step1Text.classList.remove('text-purple-700');
+                    step2Text.classList.add('text-purple-700');
+                } else if (step === 'create') {
+                    progressBar.style.width = '100%';
+                }
+            };
+
+            const handleApiRequest = async (endpoint, formData, button, method = 'POST') => {
+                const originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = `<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>`;
+                try {
+                    const response = await fetch(endpoint, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${onboardingToken}`},
+                        body: JSON.stringify(formData),
+                    });
+                    const result = await response.json();
+                    if (!response.ok) {
+                        showMessage(result.message || 'An unknown error occurred.', true);
+                        if (response.status === 401) setTimeout(() => window.location.href = '/auth', 2000);
+                        return null;
+                    }
+                    return result;
+                } catch (error) {
+                    console.error('API Request Error:', error);
+                    showMessage('Could not connect to the server.', true);
+                    return null;
+                } finally {
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
+            };
+            
+            // --- Event Listeners ---
+            completeProfileForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showMessage('');
+                const formData = Object.fromEntries(new FormData(completeProfileForm).entries());
+                const button = completeProfileForm.querySelector('button[type="submit"]');
+                const result = await handleApiRequest(`/update_user_details/${onboardingUserId}`, formData, button, 'PUT');
+                if (result) {
+                    showMessage(result.message, false);
+                    setTimeout(() => showMessage(''), 1500);
+                    switchView('profile', 'choice');
+                    updateProgress('choice');
+                }
+            });
+
+            showCreateBtn.addEventListener('click', () => {
+                switchView('choice', 'create');
+                updateProgress('create');
+            });
+
+            showJoinBtn.addEventListener('click', () => {
+                // The user journey ends here, token no longer needed.
+                localStorage.removeItem('onboarding_user_id');
+                localStorage.removeItem('onboarding_token');
+                switchView('choice', 'join');
+            });
+
+            createOrganizationForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showMessage('');
+                const formData = Object.fromEntries(new FormData(createOrganizationForm).entries());
+                formData.user_id = onboardingUserId;
+                const button = createOrganizationForm.querySelector('button[type="submit"]');
+                const result = await handleApiRequest('/create_organization', formData, button, 'POST');
+
+                if (result && result.token) {
+                    showMessage('Setup complete! Redirecting...', false);
+                    localStorage.removeItem('onboarding_user_id');
+                    localStorage.removeItem('onboarding_token');
+                    localStorage.setItem('jwt_token', result.token);
+                    setTimeout(() => window.location.href = '/space', 1000);
+                }
+            });
+
+            // --- Initial View ---
+            switchView(null, 'profile');
+        });
+    </script>
+</body>
+</html>
+

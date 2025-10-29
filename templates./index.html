@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SalesOS is the AI co-pilot for sales teams. Theta helps SDRs focus on real conversations while AI handles enrichment, outreach, and follow-ups.">
+    
+    <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/png">
+    
+    <meta property="og:title" content="SalesOS - The AI Co-Pilot for Sales Teams">
+    <meta property="og:description" content="Theta helps SDRs focus on real conversations while AI handles enrichment, outreach, and follow-ups.">
+    <meta property="og:image" content="/static/logo.png">
+    <meta property="og:type" content="website">
+
+    <title>SalesOS - The AI Co-Pilot for Sales Teams</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        /*
+        Color Palette:
+        Obsidian: #0B0B10
+        Violet: #7C3AED
+        Magenta: #EC4899
+        */
+
+        :root {
+            --violet: #7C3AED;
+            --magenta: #EC4899;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0B0B10;
+            color: #d1d5db; /* text-gray-300 */
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Background Textures */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: 
+                /* Faint Grid */
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.5;
+            z-index: -2;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            /* Top radial glow */
+            background: radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.15), transparent 60%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .font-grotesk {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Glassmorphism Card Style */
+        .glass-card {
+            background-color: rgba(22, 22, 30, 0.3); /* Dark glass */
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Neon Glow Button (Violet) */
+        .glow-button-violet {
+            background-color: var(--violet);
+            color: white;
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.5), 0 0 30px rgba(124, 58, 237, 0.3);
+            transition: all 0.3s ease-in-out;
+        }
+        .glow-button-violet:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(124, 58, 237, 0.8), 0 0 45px rgba(124, 58, 237, 0.5);
+        }
+        
+        /* Neon Glow Button (Magenta) */
+        .glow-button-magenta {
+            background-color: var(--magenta);
+            color: white;
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.5), 0 0 30px rgba(236, 72, 153, 0.3);
+            transition: all 0.3s ease-in-out;
+        }
+        .glow-button-magenta:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(236, 72, 153, 0.8), 0 0 45px rgba(236, 72, 153, 0.5);
+        }
+
+        /* Scrollytelling visual transition */
+        #sticky-visual-content > div {
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        /* Fade-in animation */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* SECTION 3 UX: Active Nav Link Glow */
+        .nav-link-active {
+            color: var(--violet) !important;
+            text-shadow: 0 0 10px var(--violet);
+        }
+
+        /* SECTION 3 UX: Hero Scroll Pulse */
+        @keyframes pulse-arrow {
+            0%, 100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(10px);
+                opacity: 0.7;
+            }
+        }
+        .pulse-arrow {
+            animation: pulse-arrow 2s infinite ease-in-out;
+        }
+
+        /* SECTION 2: Before/After Slider */
+        .slider-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+        .slider-before, .slider-after {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0B0B10;
+            padding: 1rem;
+        }
+        .slider-before {
+            clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+            z-index: 2;
+        }
+        .slider-after {
+            z-index: 1;
+        }
+        .slider-control {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 4px;
+            height: 100%;
+            background-color: var(--magenta);
+            transform: translateX(-50%);
+            z-index: 3;
+            cursor: ew-resize;
+            pointer-events: none; /* Let the range input handle events */
+        }
+        .slider-control::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--magenta);
+            border: 2px solid white;
+            box-shadow: 0 0 10px var(--magenta);
+        }
+        .slider-range {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: ew-resize;
+            z-index: 4;
+            margin: 0;
+        }
+        .slider-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 4px;
+            height: 200px; /* Match container height */
+            background: transparent;
+        }
+        .slider-range::-moz-range-thumb {
+            width: 4px;
+            height: 200px;
+            background: transparent;
+            border: 0;
+        }
+
+        /* SECTION 2: Testimonial Carousel */
+        .testimonial-item {
+            transition: opacity 0.7s ease-in-out;
+        }
+
+        /* SECTION 2: Demo Chat Widget */
+        .chat-bubble {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 100;
+        }
+        .chat-window {
+            position: fixed;
+            bottom: 6rem;
+            right: 2rem;
+            width: 90%;
+            max-width: 380px;
+            height: 500px;
+            z-index: 100;
+            transform-origin: bottom right;
+            transition: all 0.3s ease-in-out;
+        }
+        .chat-message {
+            max-width: 80%;
+            animation: text-ripple 0.5s ease-out;
+        }
+        .chat-message.theta-message .typing-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1em;
+            background-color: var(--violet);
+            margin-left: 4px;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: '#0B0B10',
+                        violet: '#7C3AED',
+                        magenta: '#EC4899',
+                        'dark-glass': 'rgba(22, 22, 30, 0.3)',
+                        'dark-border': 'rgba(255, 255, 255, 0.08)',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                        grotesk: ['Space Grotesk', 'sans-serif'],
+                    },
+                    animation: {
+                        'text-ripple': 'text-ripple 1s ease-out',
+                        'subtle-pulse': 'subtle-pulse 4s infinite ease-in-out',
+                        'neural-hover': 'neural-hover 1.5s infinite ease-in-out'
+                    },
+                    keyframes: {
+                        'text-ripple': {
+                            '0%': { opacity: 0, transform: 'scale(0.8)' },
+                            '100%': { opacity: 1, transform: 'scale(1)' }
+                        },
+                        'subtle-pulse': {
+                            '0%, 100%': { opacity: 0.8 },
+                            '50%': { opacity: 1 }
+                        },
+                        'neural-hover': {
+                            '0%, 100%': { strokeWidth: 2, opacity: 0.7 },
+                            '50%': { strokeWidth: 4, opacity: 1 }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="antialiased overflow-x-hidden">
+
+    <header id="main-header" class="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl transition-all duration-300">
+        <nav class="flex items-center justify-between glass-card rounded-full p-2 md:p-3 shadow-lg">
+            
+            <a href="#" class="flex items-center space-x-2 pl-3" aria-label="SalesOS Home">
+                <img src="/static/logo.png"
+                     alt="SalesOS Logo"
+                     class="h-7 w-auto brightness-0 invert"
+                     onerror="this.onerror=null;this.src='https://placehold.co/120x28/0B0B10/FFFFFF?text=SalesOS&font=inter';">
+            </a>
+            <div class="hidden md:flex space-x-6 text-gray-300 items-center text-sm font-medium">
+                <a id="nav-problem" href="#problem" class="hover:text-violet transition-colors" aria-label="Scroll to The Problem">The Problem</a>
+                <a id="nav-collaboration" href="#collaboration" class="hover:text-violet transition-colors" aria-label="Scroll to Synergy">Synergy</a>
+                <a id="nav-features" href="#features" class="hover:text-violet transition-colors" aria-label="Scroll to Features">Features</a>
+                <a id="nav-features" href="https://salesos.orionac.in/privacy-policy" class="hover:text-violet transition-colors" aria-label="Scroll to Features">Privacy-Policy</a>
+                <a id="nav-roi" href="#roi" class="hover:text-violet transition-colors" aria-label="Scroll to ROI Calculator">ROI</a>
+            </div>
+
+            <a href="#final-cta" class="glow-button-violet text-sm font-semibold px-5 py-2.5 rounded-full" aria-label="Start Free Trial">
+                Start Free Trial
+            </a>
+        </nav>
+    </header>
+
+    <main>
+
+        <section id="hero" class="relative min-h-screen flex items-center justify-center text-center overflow-hidden pt-24 pb-16">
+            <canvas id="hero-canvas" class="absolute inset-0 z-0 opacity-40"></canvas>
+            
+            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[500px] opacity-20" style="pointer-events: none;" aria-hidden="true">
+                <svg viewBox="0 0 300 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="silhouette-glow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                            <stop offset="0%" stop-color="#7C3AED" stop-opacity="0.7"/>
+                            <stop offset="100%" stop-color="#EC4899" stop-opacity="0.1"/>
+                        </radialGradient>
+                    </defs>
+                    <path d="M150 145C130.67 145 115 129.33 115 110C115 90.67 130.67 75 150 75C169.33 75 185 90.67 185 110C185 129.33 169.33 145 150 145ZM150 85C136.193 85 125 96.1929 125 110C125 123.807 136.193 135 150 135C163.807 135 175 123.807 175 110C175 96.1929 163.807 85 150 85Z" fill="url(#silhouette-glow)"/>
+                    <path d="M197.5 250H102.5C94.2157 250 87.5 243.284 87.5 235V190C87.5 170.67 103.17 155 122.5 155H177.5C196.83 155 212.5 170.67 212.5 190V235C212.5 243.284 205.784 250 197.5 250ZM97.5 240H192.5C200.209 240 202.5 237.709 202.5 235V190C202.5 176.193 191.307 165 177.5 165H122.5C108.693 165 97.5 176.193 97.5 190V235C97.5 237.709 99.7909 240 102.5 240Z" fill="url(#silhouette-glow)"/>
+                </svg>
+            </div>
+            
+            <div class="relative z-10 p-4">
+                <h1 class="font-grotesk font-bold text-5xl md:text-7xl lg:text-8xl text-white leading-tight max-w-5xl mx-auto">
+                    The AI Co-Pilot
+                    <br>
+                    <span class="text-violet">for Sales Teams.</span>
+                </h1>
+                
+                <p class="font-inter text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mt-6 mb-10">
+                    Theta helps SDRs focus on real conversations — while AI handles enrichment, outreach, follow-ups, <strong class="text-white">and performance analysis.</strong>
+                </p>
+
+                <a href="#final-cta" class="glow-button-violet font-grotesk font-bold py-4 px-10 text-lg rounded-lg">
+                    Meet Your Co-Pilot
+                </a>
+            </div>
+
+            <a href="#problem" aria-label="Scroll to experience" class="pulse-arrow absolute bottom-10 left-1/2 -translate-x-1/2 text-white opacity-80 hover:opacity-100 transition-opacity">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 256 256"><path d="M208.49,152.49l-72,72a12,12,0,0,1-17,0l-72-72a12,12,0,0,1,17-17L116,187V40a12,12,0,0,1,24,0V187l51.51-51.52a12,12,0,0,1,17,17Z"></path></svg>
+            </a>
+        </section>
+
+        <section id="analyst" class="py-24 md:py-32 relative">
+            <div class="container mx-auto px-4 max-w-7xl">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
+                    
+                    <div class="fade-in">
+                        <span class="font-grotesk text-violet font-bold text-sm uppercase">New Feature</span>
+                        <h2 class="font-grotesk text-4xl md:text-5xl font-bold text-white mb-6 mt-2">Meet Your Virtual Data Analyst</h2>
+                        <p class="text-lg text-gray-300 mb-8">
+                            Stop guessing. Your AI Co-Pilot now translates complex sales data into plain-English insights. Go beyond static dashboards and simply ask your data questions.
+                        </p>
+                        <ul class="space-y-5">
+                            <li class="flex items-start gap-3">
+                                <i class="ph-fill ph-question text-violet text-2xl pt-1 flex-shrink-0"></i>
+                                <div>
+                                    <h4 class="font-grotesk text-lg font-bold text-white">Conversational Q&A</h4>
+                                    <p class="text-gray-400">Ask, "Which outreach sequence is performing best?" or "Show me all deals at risk of stalling."</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="ph-fill ph-trend-up text-violet text-2xl pt-1 flex-shrink-0"></i>
+                                <div>
+                                    <h4 class="font-grotesk text-lg font-bold text-white">Proactive Insights</h4>
+                                    <p class="text-gray-400">The AI surfaces hidden trends you might have missed, from ICP response rates to reps who need coaching.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="ph-fill ph-chart-line text-violet text-2xl pt-1 flex-shrink-0"></i>
+                                <div>
+                                    <h4 class="font-grotesk text-lg font-bold text-white">Pipeline & Performance</h4>
+                                    <p class="text-gray-400">Get an instant, unbiased view of your entire pipeline, forecast accurately, and see what's driving wins.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="fade-in" style="transition-delay: 150ms;">
+                        <div class="glass-card rounded-2xl p-4 md:p-6 border-violet max-h-[400px]">
+                            <div class="flex flex-col h-full">
+                                
+                                <div class="flex-grow space-y-4 overflow-y-auto pr-2 max-h-[300px]">
+                                    
+                                    <div class="chat-message user-message flex justify-end">
+                                        <div class="p-3 bg-violet rounded-lg text-sm text-white max-w-[80%]">
+                                            Hey Theta, how's my pipeline looking for this quarter?
+                                        </div>
+                                    </div>
+                                    <div class="chat-message theta-message flex">
+                                        <div class="p-3 bg-dark-glass rounded-lg text-sm text-gray-300 max-w-[80%]">
+                                            Hi Alex! Your total pipeline is at $4.2M, which is 85% to target. I've noticed 4 large deals in your 'Negotiation' stage have stalled. Would you like to see them?
+                                        </div>
+                                    </div>
+                                    <div class="chat-message user-message flex justify-end">
+                                        <div class="p-3 bg-violet rounded-lg text-sm text-white max-w-[80%]">
+                                            Yes, show me the stalled deals.
+                                        </div>
+                                    </div>
+                                    <div class="chat-message theta-message flex">
+                                        <div class="p-3 bg-dark-glass rounded-lg text-sm text-gray-300 max-w-[80%]">
+                                            <p>Here they are:</p>
+                                            <ul class="list-disc list-inside my-1">
+                                                <li>Acme Corp ($75,000)</li>
+                                                <li>FinTech Solutions ($52,000)</li>
+                                                <li>Global Logistics ($45,000)</li>
+                                                <li>HealthCo ($30,000)</li>
+                                            </ul>
+                                            <p>The top one, Acme Corp, hasn't had contact in 16 days.</p>
+                                        </div>
+                                    </div>
+                                    <div class="chat-message user-message flex justify-end">
+                                        <div class="p-3 bg-violet rounded-lg text-sm text-white max-w-[80%]">
+                                            What's the last touchpoint with Acme Corp?
+                                        </div>
+                                    </div>
+                                    <div class="chat-message theta-message flex">
+                                        <div class="p-3 bg-dark-glass rounded-lg text-sm text-gray-300 max-w-[80%]">
+                                            Your last email was 16 days ago (Sequence B, Step 4). They viewed your pricing page 12 days ago but didn't reply. Deals that stall at this stage often respond well to a relevant case study.
+                                        </div>
+                                    </div>
+                                    <div class="chat-message user-message flex justify-end">
+                                        <div class="p-3 bg-violet rounded-lg text-sm text-white max-w-[80%]">
+                                            Good idea. Which case study is performing best for deals this size?
+                                        </div>
+                                    </div>
+                                    <div class="chat-message theta-message flex">
+                                        <div class="p-3 bg-dark-glass rounded-lg text-sm text-gray-300 max-w-[80%]">
+                                            My analysis shows that our 'Enterprise Security' case study has a 28% higher reply rate for FinTech companies over $50k. Would you like me to draft a follow-up?
+                                        </div>
+                                    </div>
+                                    <div class="chat-message user-message flex justify-end">
+                                        <div class="p-3 bg-violet rounded-lg text-sm text-white max-w-[80%]">
+                                            Yes, draft a short follow-up for Acme and include that case study.
+                                        </div>
+                                    </div>
+                                    <div class="chat-message theta-message flex">
+                                        <div class="p-3 bg-dark-glass rounded-lg text-sm text-gray-300 max-w-[80%]">
+                                            <p class="font-bold text-white">Drafting... Here's the email:</p>
+                                            <div class="text-xs border-l-2 border-violet pl-2 my-2 italic text-gray-400">
+                                                Subject: Following up - Acme & Enterprise Security<br><br>
+                                                Hi [Contact],<br><br>
+                                                Noticed you viewed our pricing. Since security compliance is a key focus for you (congrats on the press release!), I thought you'd find our 'Enterprise Security' case study valuable...
+                                            </div>
+                                            <p>Ready to send?</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="mt-auto pt-4 border-t border-dark-border">
+                                    <div class="w-full bg-dark-glass border border-dark-border rounded-lg p-3 text-gray-500 text-sm">
+                                        Ask a question about your data...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        <section id="problem" class="py-24 md:py-32 relative">
+            <div class="container mx-auto px-4 max-w-7xl">
+                <div class="text-center max-w-3xl mx-auto mb-16 md:mb-24">
+                    <h2 class="font-grotesk text-4xl md:text-5xl font-bold text-white mb-4">Every SDR’s Day Feels Like a Loop.</h2>
+                    <p class="text-lg text-gray-400">SalesOS doesn’t just automate tasks. It breaks the loop, giving SDRs the leverage to perform at their peak.</p>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-12 md:gap-16">
+                    
+                    <div class="md:w-1/2 space-y-24 md:space-y-48">
+                        
+                        <div id="story-frame-1" class="story-frame min-h-[50vh] p-6 glass-card rounded-2xl border-magenta" data-step="0">
+                            <span class="font-grotesk text-magenta font-bold text-sm uppercase">The Problem</span>
+                            <h3 class="font-grotesk text-3xl font-bold text-white mt-2 mb-4">Low Lead Quality</h3>
+                            <p class="text-gray-300 mb-6">You're drowning in a sea of junk data. Hours are wasted chasing contacts that go nowhere, manually verifying emails, and guessing at company details.</p>
+                            <div class="bg-obsidian rounded-lg p-4 h-48 overflow-hidden">
+                                <pre class="text-xs text-red-400 opacity-70">
+{
+  "name": "J. Doe",
+  "email": "null",
+  "company": "Acme?",
+  "phone": "555-????",
+  "title": "",
+  "source": "old_list_2021.csv"
+}
+{
+  "name": "Smith, Jane",
+  "email": "jane@gmail.com",
+  "company": "Tech Corp",
+  "phone": "123-456-7890",
+  "title": "Manager"
+}
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div id="story-frame-2" class="story-frame min-h-[50vh] p-6 glass-card rounded-2xl border-magenta" data-step="1">
+                            <span class="font-grotesk text-magenta font-bold text-sm uppercase">The Problem</span>
+                            <h3 class="font-grotesk text-3xl font-bold text-white mt-2 mb-4">Low Response Rates</h3>
+                            <p class="text-gray-300 mb-6">Your generic templates are getting ignored. You have no time to personalize at scale, so your outreach falls flat and your inbox is full of... nothing.</p>
+                            <div class="bg-obsidian rounded-lg p-4 h-48 overflow-hidden space-y-3">
+                                <div class="p-3 bg-dark-glass rounded opacity-50">
+                                    <p class="font-medium text-sm text-gray-400">Re: Following Up</p>
+                                    <p class="text-xs text-gray-500">To: prospect@example.com</p>
+                                </div>
+                                <div class="p-3 bg-dark-glass rounded opacity-50">
+                                    <p class="font-medium text-sm text-gray-400">Re: Quick Question</p>
+                                    <p class="text-xs text-gray-500">To: lead@company.com</p>
+                                </div>
+                                <p class="text-center text-gray-600 pt-4">-- No replies --</p>
+                            </div>
+                        </div>
+
+                        <div id="story-frame-3" class="story-frame min-h-[50vh] p-6 glass-card rounded-2xl border-magenta" data-step="2">
+                            <span class="font-grotesk text-magenta font-bold text-sm uppercase">The Problem</span>
+                            <h3 class="font-grotesk text-3xl font-bold text-white mt-2 mb-4">Repetitive Workflows</h3>
+                            
+                            <div class="slider-container" id="before-after-slider">
+                                <div class="slider-before">
+                                    <p class="text-center text-sm text-magenta font-bold mb-2">BEFORE: Manual Chaos</p>
+                                    <div class="flex flex-wrap gap-3 items-start">
+                                        <span class="bg-dark-glass text-gray-400 text-sm p-2 rounded">CRM</span>
+                                        <span class="bg-dark-glass text-gray-400 text-sm p-2 rounded">LinkedIn</span>
+                                        <span class="bg-dark-glass text-gray-400 text-sm p-2 rounded">Email</span>
+                                        <span class="bg-dark-glass text-gray-400 text-sm p-2 rounded">Spreadsheet</span>
+                                        <span class="bg-dark-glass text-gray-400 text-sm p-2 rounded">Calendar</span>
+                                        <span class="bg-dark-glass text-gray-400 text-sm p-2 rounded">Notes</span>
+                                        <span class="bg-dark-glass text-gray-400 text-sm p-2 rounded">Company.com</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="slider-after">
+                                    <p class="text-center text-sm text-violet font-bold mb-2">AFTER: AI Synergy</p>
+                                    <div class="flex items-center justify-center h-full">
+                                        <svg viewBox="0 0 200 100" class="w-full h-full p-4">
+                                            <rect x="10" y="35" width="50" height="30" rx="4" fill="#dark-glass" stroke="#violet"/>
+                                            <text x="35" y="55" fill="#fff" font-size="8" text-anchor="middle">Enrich</text>
+                                            <path d="M60 50 L 80 50" stroke="#violet" stroke-width="2" stroke-dasharray="4"/>
+                                            <rect x="80" y="35" width="50" height="30" rx="4" fill="#dark-glass" stroke="#violet"/>
+                                            <text x="105" y="55" fill="#fff" font-size="8" text-anchor="middle">Personalize</text>
+                                            <path d="M130 50 L 150 50" stroke="#violet" stroke-width="2" stroke-dasharray="4"/>
+                                            <rect x="150" y="35" width="40" height="30" rx="4" fill="#dark-glass" stroke="#violet"/>
+                                            <text x="170" y="55" fill="#fff" font-size="8" text-anchor="middle">Send</text>
+                                        </svg>
+                                    </div>
+                                </div>
+                                
+                                <div class="slider-control" id="slider-handle"></div>
+                                
+                                <input type="range" min="0" max="100" value="50" class="slider-range" id="slider-range-input" aria-label="Compare before and after">
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="md:w-1/2 md:sticky md:top-24 h-[70vh] lg:h-[80vh]">
+                        <div id="sticky-visual" class="glass-card rounded-2xl border-violet h-full p-6 md:p-8 flex flex-col justify-center">
+                            <span class="font-grotesk text-violet font-bold text-sm uppercase mb-4">The Co-Pilot Solution</span>
+                            <div id="sticky-visual-content" class="relative h-full">
+                                <div class="visual-content absolute inset-0 opacity-0" data-content="0">
+                                    <h3 class="font-grotesk text-3xl font-bold text-white mb-4">Theta filters and enriches.</h3>
+                                    <p class="text-gray-300 mb-6">Your co-pilot finds ideal customer profiles, verifies data in real-time, and hands you a clean, prioritized list of contacts ready for outreach.</p>
+                                    <div class="bg-obsidian rounded-lg p-4 h-48 overflow-hidden">
+                                        <pre class="text-xs text-green-400">
+{
+  "name": "Jane Doe",
+  "email": "jane.doe@techcorp.com",
+  "company": "Tech Corp",
+  "phone": "123-456-7890",
+  "title": "Director of Engineering",
+  "source": "LinkedIn (Verified)",
+  "status": "Priority"
+}
+                                        </pre>
+                                    </div>
+                                </div>
+                                <div class="visual-content absolute inset-0 opacity-0" data-content="1">
+                                    <h3 class="font-grotesk text-3xl font-bold text-white mb-4">Theta personalizes every message.</h3>
+                                    <p class="text-gray-300 mb-6">Theta drafts hyper-personalized emails based on a lead's profile, industry news, and your past successes. It finds the perfect time to send, boosting reply rates.</p>
+                                    <div class="bg-obsidian rounded-lg p-4 h-48 overflow-hidden space-y-3">
+                                        <div class="p-3 bg-dark-glass rounded border border-violet">
+                                            <p class="font-medium text-sm text-white">To: jane.doe@techcorp.com</p>
+                                            <p class="text-xs text-gray-400 mt-2">Subject: Congrats on the new launch!</p>
+                                            <p class="text-sm text-gray-300 mt-2">"Hi Jane, saw the news on TechCrunch..."</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="visual-content absolute inset-0 opacity-0" data-content="2">
+                                    <h3 class="font-grotesk text-3xl font-bold text-white mb-4">Theta automates what drains you.</h3>
+                                    <p class="text-gray-300 mb-6">Your co-pilot logs every call, email, and note to the CRM. It sets follow-up reminders and handles the busywork, freeing you to build relationships.</p>
+                                    <div class="bg-obsidian rounded-lg p-4 h-48 overflow-hidden flex items-center justify-center">
+                                        <svg viewBox="0 0 200 100" class="w-full h-full">
+                                            <rect x="10" y="35" width="50" height="30" rx="4" fill="#dark-glass" stroke="#violet"/>
+                                            <text x="35" y="55" fill="#fff" font-size="8" text-anchor="middle">Enrich</text>
+                                            <path d="M60 50 L 80 50" stroke="#violet" stroke-width="2" stroke-dasharray="4"/>
+                                            <rect x="80" y="35" width="50" height="30" rx="4" fill="#dark-glass" stroke="#violet"/>
+                                            <text x="105" y="55" fill="#fff" font-size="8" text-anchor="middle">Personalize</text>
+                                            <path d="M130 50 L 150 50" stroke="#violet" stroke-width="2" stroke-dasharray="4"/>
+                                            <rect x="150" y="35" width="40" height="30" rx="4" fill="#dark-glass" stroke="#violet"/>
+                                            <text x="170" y="55" fill="#fff" font-size="8" text-anchor="middle">Send</text>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center max-w-3xl mx-auto mt-24">
+                    <p class="font-grotesk text-3xl md:text-4xl font-bold text-white">
+                        SalesOS doesn’t <span class="text-magenta line-through">replace</span> SDRs —
+                        <br class="hidden sm:block">
+                        it <span class="text-violet">frees</span> them.
+                    </p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="collaboration" class="py-24 md:py-32 overflow-hidden">
+            <div class="container mx-auto px-4 max-w-7xl">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center relative">
+                    
+                    <div class="absolute inset-0 flex items-center justify-center z-0 opacity-30 animate-subtle-pulse" aria-hidden="true">
+                        <svg width="100%" height="200" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path id="neural-path" d="M10 100 C 100 20, 300 180, 390 100" stroke="url(#neural-bridge)" stroke-width="2" stroke-dasharray="4 4" class="transition-all duration-300" />
+                            <circle cx="10" cy="100" r="4" fill="#EC4899"/>
+                            <circle cx="390" cy="100" r="4" fill="#7C3AED"/>
+                            <defs>
+                                <linearGradient id="neural-bridge" x1="0%" y1="50%" x2="100%" y2="50%">
+                                    <stop offset="0%" stop-color="#EC4899"/>
+                                    <stop offset="100%" stop-color="#7C3AED"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+
+                    <div id="human-side" class="relative z-10 text-center md:text-left cursor-pointer">
+                        <svg viewBox="0 0 100 100" class="w-24 h-24 mx-auto md:mx-0 mb-4 opacity-80" fill="#EC4899" aria-hidden="true">
+                            <circle cx="50" cy="30" r="12" />
+                            <path d="M80 90 H 20 C 15 90, 15 85, 15 80 V 60 C 15 45, 30 40, 50 40 C 70 40, 85 45, 85 60 V 80 C 85 85, 85 90, 80 90 Z" />
+                        </svg>
+                        <h3 class="font-grotesk text-5xl font-bold text-white">Humans <span class="text-magenta">sell.</span></h3>
+                    </div>
+                    
+                    <div id="ai-side" class="relative z-10 text-center md:text-right cursor-pointer">
+                         <svg viewBox="0 0 100 100" class="w-24 h-24 mx-auto md:ml-auto mb-4 opacity-80" fill="#7C3AED" aria-hidden="true">
+                            <circle cx="50" cy="50" r="20" />
+                            <circle cx="50" cy="50" r="30" fill="none" stroke="#7C3AED" stroke-width="2" stroke-dasharray="2 2"/>
+                            <circle cx="15" cy="15" r="5" />
+                            <circle cx="85" cy="15" r="5" />
+                            <circle cx="15" cy="85" r="5" />
+                            <circle cx="85" cy="85" r="5" />
+                        </svg>
+                        <h3 class="font-grotesk text-5xl font-bold text-white">AI <span class="text-violet">scales.</span></h3>
+                    </div>
+                </div>
+
+                <div class="text-center max-w-3xl mx-auto mt-16">
+                    <p class="text-lg md:text-xl text-gray-300">
+                        Theta is your tireless teammate — always on, always learning from your playbook. It handles the 90% of work that's repetitive, so you can focus on the 10% that's human: building trust and closing deals.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="stats" class="py-24">
+            <div class="container mx-auto px-4 max-w-7xl">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-card rounded-2xl p-8 text-center fade-in">
+                        <span id="stat-1" class="font-grotesk text-6xl font-bold text-violet" data-target="38">0</span>
+                        <span class="font-grotesk text-5xl font-bold text-violet">%</span>
+                        <p class="mt-2 text-lg text-gray-300">Increase in Reply Rate</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-8 text-center fade-in" style="transition-delay: 150ms;">
+                        <span id="stat-2" class="font-grotesk text-6xl font-bold text-magenta" data-target="42">0</span>
+                        <span class="font-grotesk text-5xl font-bold text-magenta">%</span>
+                        <p class="mt-2 text-lg text-gray-300">Reduction in Manual Work</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-8 text-center fade-in" style="transition-delay: 300ms;">
+                        <span id="stat-3" class="font-grotesk text-6xl font-bold text-white" data-target="10">0</span>
+                        <span class="font-grotesk text-5xl font-bold text-white">h</span>
+                        <p class="mt-2 text-lg text-gray-300">Saved per SDR / Week</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="py-24 md:py-32">
+            <div class="container mx-auto px-4 max-w-7xl">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <h2 class="font-grotesk text-4xl md:text-5xl font-bold text-white mb-4">Your Co-Pilot's Toolkit</h2>
+                    <p class="text-lg text-gray-400">Features designed to amplify your SDRs, not replace them.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    
+                    <div class="glass-card rounded-2xl p-6 fade-in transform transition-all duration-300 hover:-translate-y-2 hover:border-violet">
+                        <svg class="w-10 h-10 mb-4 text-violet" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 016-6h6m6 6v-1a6 6 0 00-6-6h-1.5"></path></svg>
+                        <h3 class="font-grotesk text-xl font-bold text-white mb-2">Lead Enrichment</h3>
+                        <p class="text-sm text-gray-300"><span class="font-bold text-gray-100">Human Benefit:</span> Saves hours of manual research and data entry.</p>
+                    </div>
+
+                    <div class="glass-card rounded-2xl p-6 fade-in transform transition-all duration-300 hover:-translate-y-2 hover:border-violet" style="transition-delay: 100ms;">
+                        <svg class="w-10 h-10 mb-4 text-violet" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        <h3 class="font-grotesk text-xl font-bold text-white mb-2">Smart Outreach</h3>
+                        <p class="text-sm text-gray-300"><span class="font-bold text-gray-100">Human Benefit:</span> Boosts reply rates with adaptive, personalized tone.</p>
+                    </div>
+
+                    <div class="glass-card rounded-2xl p-6 fade-in transform transition-all duration-300 hover:-translate-y-2 hover:border-violet" style="transition-delay: 200ms;">
+                        <svg class="w-10 h-10 mb-4 text-violet" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M5 11v2m14-2v2"></path></svg>
+                        <h3 class="font-grotesk text-xl font-bold text-white mb-2">Workflow Automation</h3>
+                        <p class="text-sm text-gray-300"><span class="font-bold text-gray-100">Human Benefit:</span> Lets SDRs focus on conversations, not CRM data entry.</p>
+                    </div>
+
+                    <div class="glass-card rounded-2xl p-6 fade-in transform transition-all duration-300 hover:-translate-y-2 hover:border-violet" style="transition-delay: 300ms;">
+                        <svg class="w-10 h-10 mb-4 text-violet" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707.707M12 21v-1m0-8c-2.21 0-4 1.79-4 4h8c0-2.21-1.79-4-4-4z"></path></svg>
+                        <h3 class="font-grotesk text-xl font-bold text-white mb-2">AI Reflection</h3>
+                        <p class="text-sm text-gray-300"><span class="font-bold text-gray-100">Human Benefit:</span> Learns from every campaign to improve your team's playbook.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="testimonial" class="py-24 md:py-32 overflow-hidden">
+            <div class="container mx-auto px-4 max-w-7xl text-center relative">
+                <svg class="absolute top-0 left-0 w-24 h-24 text-violet opacity-10 -translate-x-1/2 -translate-y-1/2" fill="currentColor" viewBox="0 0 32 32" aria-hidden="true">
+                    <path d="M10.513,10.742C4.54,12.24,2,16.52,2,21.5c0,4.411,3.589,8,8,8s8-3.589,8-8C18,12.31,10.603,10.636,10.513,10.742z M12,21.5c0,2.206-1.794,4-4,4s-4-1.794-4-4c0-2.83,1.603-5.83,6-7.14C11.196,16.15,12,18.63,12,21.5z"></path>
+                    <path d="M26.513,10.742C20.54,12.24,18,16.52,18,21.5c0,4.411,3.589,8,8,8s8-3.589,8-8C34,12.31,26.603,10.636,26.513,10.742z M28,21.5c0,2.206-1.794,4-4,4s-4-1.794-4-4c0-2.83,1.603-5.83,6-7.14C27.196,16.15,28,18.63,28,21.5z"></path>
+                </svg>
+
+                <div id="testimonial-container" class="relative min-h-[200px]">
+                    <figure class="testimonial-item absolute w-full top-0 left-0 opacity-0">
+                        <blockquote class="font-grotesk text-3xl md:text-5xl font-bold text-white leading-tight">
+                            “I didn’t lose my job to AI —
+                            <br>
+                            I <span class="text-magenta">hit quota</span> because of it.”
+                        </blockquote>
+                        <figcaption class="mt-6">
+                            <p class="font-inter text-lg text-gray-300">Alex C. | SDR Manager, Tech Startup</p>
+                        </figcaption>
+                    </figure>
+                    <figure class="testimonial-item absolute w-full top-0 left-0 opacity-0">
+                        <blockquote class="font-grotesk text-3xl md:text-5xl font-bold text-white leading-tight">
+                            “Theta cut our ramp time in half. New SDRs are productive in <span class="text-violet">weeks, not months</span>.”
+                        </blockquote>
+                        <figcaption class="mt-6">
+                            <p class="font-inter text-lg text-gray-300">Sarah J. | VP of Sales, FinTech</p>
+                        </figcaption>
+                    </figure>
+                    <figure class="testimonial-item absolute w-full top-0 left-0 opacity-0">
+                        <blockquote class="font-grotesk text-3xl md:text-5xl font-bold text-white leading-tight">
+                            “We saved over <span class="text-magenta">200 hours</span> last month on manual data entry alone. It's a game-changer.”
+                        </blockquote>
+                        <figcaption class="mt-6">
+                            <p class="font-inter text-lg text-gray-300">Mike B. | RevOps Director</p>
+                        </figcaption>
+                    </figure>
+                </div>
+
+                <div id="testimonial-dots" class="flex justify-center space-x-3 mt-8">
+                    </div>
+            </div>
+        </section>
+
+        <section id="roi" class="py-24 md:py-32">
+            <div class="container mx-auto px-4 max-w-7xl">
+                <div class="glass-card rounded-2xl p-8 md:p-12">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+                        <div>
+                            <h2 class="font-grotesk text-3xl md:text-4xl font-bold text-white mb-4">Calculate Your ROI</h2>
+                            <p class="text-gray-300 mb-6">See the immediate, quantified benefit of SalesOS. (Based on average customer data)</p>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="sdr-count" class="block text-sm font-medium text-gray-300 mb-1">How many SDRs on your team?</label>
+                                    <input type="number" id="sdr-count" class="w-full bg-dark-glass border border-dark-border rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-violet" placeholder="e.g., 10" value="10">
+                                </div>
+                                <div>
+                                    <label for="avg-leads" class="block text-sm font-medium text-gray-300 mb-1">Avg. monthly leads / rep</label>
+                                    <input type="number" id="avg-leads" class="w-full bg-dark-glass border border-dark-border rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-violet" placeholder="e.g., 500" value="500">
+                                </div>
+                                <div>
+                                    <label for="avg-deal" class="block text-sm font-medium text-gray-300 mb-1">Average deal value ($)</label>
+                                    <input type="number" id="avg-deal" class="w-full bg-dark-glass border border-dark-border rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-violet" placeholder="e.g., 5000" value="5000">
+                                </div>
+                                
+                                <button id="calc-roi-btn" class="glow-button-magenta font-grotesk font-bold py-3 px-8 text-lg rounded-lg w-full">
+                                    Recalculate
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="roi-results-container">
+                            <p class="font-grotesk text-lg text-gray-300">Your Team's Estimated Monthly Gain:</p>
+                            
+                            <div class="mt-4 space-y-5">
+                                <div class="glass-card rounded-lg p-4 border border-violet">
+                                    <p class="text-sm text-gray-400">Projected Pipeline Increase</p>
+                                    <p id="roi-pipeline" class="font-grotesk text-4xl font-bold text-violet">$0</p>
+                                </div>
+                                <div class="glass-card rounded-lg p-4 border border-magenta">
+                                    <p class="text-sm text-gray-400">Manual Hours Saved</p>
+                                    <p id="roi-hours" class="font-grotesk text-4xl font-bold text-magenta">0h</p>
+                                </div>
+                                <div class="glass-card rounded-lg p-4 border-gray-500">
+                                    <p class="text-sm text-gray-400">Total Monthly ROI</p>
+                                    <p id="roi-total" class="font-grotesk text-4xl font-bold text-white">0x</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="final-cta" class="py-24 md:py-40 text-center relative overflow-hidden">
+            <div class="absolute inset-0 z-0 bg-gradient-to-t from-violet/20 to-transparent"></div>
+            <div class="container mx-auto px-4 max-w-7xl relative z-10">
+                <h2 class="font-grotesk font-bold text-4xl md:text-6xl text-white mb-8">
+                    Empower Your SDRs.
+                    <br>
+                    Not Replace Them.
+                </h2>
+                <a href="https://salesos.orionac.in/auth" class="glow-button-violet font-grotesk font-bold py-4 px-10 text-lg rounded-lg">
+                    Start Free Today
+                </a>
+                <p class="mt-4 text-sm text-gray-400">14-day free trial. No credit card required.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="py-16 border-t border-dark-border">
+        <div class="container mx-auto px-4 max-w-7xl">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <div>
+                    
+                    <a href="#" class="flex items-center space-x-2 mb-4" aria-label="SalesOS Home">
+                        <img src="/static/logo.png"
+                             alt="SalesOS Logo"
+                             class="h-7 w-auto brightness-0 invert"
+                             onerror="this.onerror=null;this.src='https://placehold.co/120x28/0B0B10/FFFFFF?text=SalesOS&font=inter';">
+                    </a>
+                    <p class="text-gray-400 text-sm max-w-xs">The AI co-pilot for high-performance sales teams.</p>
+                    <p class="text-gray-500 text-sm mt-6">&copy; 2025 SalesOS. All rights reserved.</p>
+                </div>
+                
+                <div>
+                    <h4 class="font-grotesk text-lg font-semibold text-white mb-3">Get AI-in-Sales Insights</h4>
+                    <p class="text-gray-400 text-sm mb-4">Subscribe to our newsletter for the latest strategies.</p>
+                    <form class="flex flex-col sm:flex-row gap-2">
+                        <label for="footer-email" class="sr-only">Email address</label>
+                        <input type="email" id="footer-email" class="flex-grow bg-dark-glass border border-dark-border rounded-lg p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet" placeholder="you@company.com">
+                        <button type="submit" class="glow-button-violet text-sm font-semibold px-5 py-3 rounded-lg">
+                            Subscribe
+                        </button>
+                    </form>
+                </div>
+
+                <div>
+                    <h4 class="font-grotesk text-lg font-semibold text-white mb-3">Ready to Start?</h4>
+                    <p class="text-gray-400 text-sm mb-4">See your co-pilot in action.</p>
+                    <a href="#" class="glow-button-magenta font-grotesk font-bold py-3 px-6 text-base rounded-lg inline-block">
+                        Book a Live Demo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div id="chat-widget" class="z-50">
+        <button id="chat-bubble-btn" class="chat-bubble glow-button-violet rounded-full p-4 shadow-2xl" aria-label="Open chat demo">
+            <i class="ph-fill ph-chats-teardrop text-3xl text-white"></i>
+        </button>
+
+        <div id="chat-window" class="chat-window glass-card rounded-2xl flex-col overflow-hidden shadow-2xl scale-0 opacity-0 hidden">
+            <div class="flex items-center justify-between p-4 border-b border-dark-border bg-dark-glass">
+                <div class="flex items-center space-x-2">
+                    <i class="ph-fill ph-sparkle text-xl text-violet"></i>
+                    <span class="font-grotesk font-bold text-lg text-white">Theta AI</span>
+                </div>
+                <button id="chat-close-btn" class="text-gray-400 hover:text-white" aria-label="Close chat demo">
+                    <i class="ph-bold ph-x text-xl"></i>
+                </button>
+            </div>
+
+            <div id="chat-messages" class="flex-1 p-4 space-y-4 overflow-y-auto">
+                <div class="chat-message theta-message flex">
+                    <div class="p-3 bg-dark-glass rounded-lg text-sm text-gray-300">
+                        <p>Hi there! I'm Theta, your AI co-pilot. Ask me how I can help your sales team scale. 👇</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="chat-prompts" class="p-4 border-t border-dark-border space-y-2">
+                </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // --- Header Scroll Effect ---
+            const header = document.getElementById('main-header');
+            if (header) {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 10) {
+                        header.classList.add('bg-dark-glass');
+                    } else {
+                        header.classList.remove('bg-dark-glass');
+                    }
+                });
+            }
+            
+            // --- Hero Canvas Animation (Neural Waves) ---
+            const canvas = document.getElementById('hero-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let width, height, particles;
+                
+                // PHASE 1 OPTIMIZATION: Reduce particleCount on mobile
+                const particleCount = window.innerWidth < 768 ? 25 : 50;
+                
+                const mouse = { x: 9999, y: 9999 };
+                const colors = ['#7C3AED', '#EC4899', '#FFFFFF'];
+
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * width;
+                        this.y = Math.random() * height;
+                        this.size = Math.random() * 1.5 + 0.5;
+                        this.speedX = (Math.random() * 2 - 1) * 0.2;
+                        this.speedY = (Math.random() * 2 - 1) * 0.2;
+                        this.color = colors[Math.floor(Math.random() * colors.length)];
+                    }
+                    update() {
+                        if (this.x > width || this.x < 0) this.speedX *= -1;
+                        if (this.y > height || this.y < 0) this.speedY *= -1;
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+
+                function init() {
+                    width = canvas.width = window.innerWidth;
+                    height = canvas.height = document.getElementById('hero').offsetHeight;
+                    particles = [];
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, width, height);
+                    for (let i = 0; i < particles.length; i++) {
+                        particles[i].update();
+                        particles[i].draw();
+                    }
+                    connect();
+                    requestAnimationFrame(animate);
+                }
+
+                function connect() {
+                    let opacityValue = 1;
+                    for (let a = 0; a < particles.length; a++) {
+                        for (let b = a + 1; b < particles.length; b++) {
+                            let distance = Math.sqrt(
+                                (particles[a].x - particles[b].x) * (particles[a].x - particles[b].x) +
+                                (particles[a].y - particles[b].y) * (particles[a].y - particles[b].y)
+                            );
+                            if (distance < 150) {
+                                opacityValue = 1 - (distance / 150);
+                                ctx.strokeStyle = `rgba(124, 58, 237, ${opacityValue * 0.5})`;
+                                ctx.lineWidth = 0.5;
+                                ctx.beginPath();
+                                ctx.moveTo(particles[a].x, particles[a].y);
+                                ctx.lineTo(particles[b].x, particles[b].y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                init();
+                animate();
+                window.addEventListener('resize', init);
+            }
+
+            // --- Scrollytelling Logic ---
+            const storyFrames = document.querySelectorAll('.story-frame');
+            const visualContents = document.querySelectorAll('#sticky-visual-content .visual-content');
+
+            if (storyFrames.length > 0 && visualContents.length > 0) {
+                visualContents[0].style.opacity = '1';
+                
+                const storyObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const step = entry.target.dataset.step;
+                            visualContents.forEach(content => {
+                                content.style.opacity = '0';
+                            });
+                            const activeContent = document.querySelector(`.visual-content[data-content="${step}"]`);
+                            if (activeContent) {
+                                activeContent.style.opacity = '1';
+                            }
+                        }
+                    });
+                }, { root: null, rootMargin: '0px', threshold: 0.5 });
+
+                storyFrames.forEach(frame => {
+                    storyObserver.observe(frame);
+                });
+            }
+
+            // --- Fade-in on Scroll (for Features, Stats) ---
+            const faders = document.querySelectorAll('.fade-in');
+            const appearOptions = {
+                threshold: 0.2,
+                rootMargin: "0px 0px -50px 0px"
+            };
+            const appearOnScroll = new IntersectionObserver(function(entries, appearOnScroll) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        
+                        // Check if it's a stat to animate
+                        const statEl = entry.target.querySelector('[data-target]');
+                        if (statEl && !statEl.dataset.animated) {
+                            animateStat(statEl);
+                            statEl.dataset.animated = 'true';
+                        }
+                        
+                        appearOnScroll.unobserve(entry.target);
+                    }
+                });
+            }, appearOptions);
+            
+            faders.forEach(fader => appearOnScroll.observe(fader));
+            
+            // --- SECTION 3 UX: Parallax Effect (Collaboration) ---
+            const humanSide = document.getElementById('human-side');
+            const aiSide = document.getElementById('ai-side');
+            const collaborationSection = document.getElementById('collaboration');
+            if(humanSide && aiSide && collaborationSection) {
+                window.addEventListener('scroll', () => {
+                    const rect = collaborationSection.getBoundingClientRect();
+                    if (rect.top < window.innerHeight && rect.bottom >= 0) {
+                        const scrollPercent = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
+                        const moveAmount = (scrollPercent - 0.5) * 50; // -25px to +25px
+                        humanSide.style.transform = `translateY(${moveAmount * 0.5}px)`;
+                        aiSide.style.transform = `translateY(${-moveAmount * 0.5}px)`;
+                    }
+                });
+
+                // --- SECTION 3 UX: Collaboration Hover Animation ---
+                const neuralPath = document.getElementById('neural-path');
+                humanSide.addEventListener('mouseenter', () => neuralPath.classList.add('animate-neural-hover'));
+                humanSide.addEventListener('mouseleave', () => neuralPath.classList.remove('animate-neural-hover'));
+                aiSide.addEventListener('mouseenter', () => neuralPath.classList.add('animate-neural-hover'));
+                aiSide.addEventListener('mouseleave', () => neuralPath.classList.remove('animate-neural-hover'));
+            }
+
+            // --- SECTION 3 UX: Header Scroll-Spy ---
+            const navLinks = document.querySelectorAll('header nav a[href^="#"]');
+            const sections = document.querySelectorAll('main section[id]');
+            
+            const navObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && entry.intersectionRatio > 0.4) {
+                        const id = entry.target.getAttribute('id');
+                        const activeLink = document.querySelector(`header nav a[href="#${id}"]`);
+                        
+                        navLinks.forEach(link => link.classList.remove('nav-link-active'));
+                        if (activeLink) {
+                            activeLink.classList.add('nav-link-active');
+                        }
+                    }
+                });
+            }, { root: null, rootMargin: "-20% 0px -50% 0px", threshold: 0.4 });
+            
+            sections.forEach(section => navObserver.observe(section));
+
+            // --- SECTION 1: Animated Stats (Phase 1) ---
+            function animateStat(el) {
+                const target = parseInt(el.dataset.target, 10);
+                let current = 0;
+                const duration = 1500;
+                const stepTime = 20;
+                const steps = duration / stepTime;
+                const increment = target / steps;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    el.innerText = Math.floor(current);
+                }, stepTime);
+            }
+
+            // --- SECTION 2: "Before -> After" Slider ---
+            const sliderInput = document.getElementById('slider-range-input');
+            const sliderBefore = document.querySelector('.slider-before');
+            const sliderHandle = document.getElementById('slider-handle');
+            if (sliderInput && sliderBefore && sliderHandle) {
+                sliderInput.addEventListener('input', (e) => {
+                    const value = e.target.value;
+                    sliderBefore.style.clipPath = `polygon(0 0, ${value}% 0, ${value}% 100%, 0 100%)`;
+                    sliderHandle.style.left = `${value}%`;
+                });
+            }
+
+            // --- SECTION 2: Testimonial Carousel ---
+            const testimonialContainer = document.getElementById('testimonial-container');
+            const dotsContainer = document.getElementById('testimonial-dots');
+            if (testimonialContainer && dotsContainer) {
+                const testimonials = testimonialContainer.querySelectorAll('.testimonial-item');
+                let currentIndex = 0;
+                
+                // Create dots
+                testimonials.forEach((_, index) => {
+                    const dot = document.createElement('button');
+                    dot.classList.add('w-3', 'h-3', 'rounded-full', 'transition-colors', 'duration-300');
+                    dot.classList.add(index === 0 ? 'bg-violet' : 'bg-dark-border');
+                    dot.setAttribute('aria-label', `Go to testimonial ${index + 1}`);
+                    dot.dataset.index = index;
+                    dotsContainer.appendChild(dot);
+                });
+
+                const dots = dotsContainer.querySelectorAll('button');
+
+                function showTestimonial(index) {
+                    testimonials.forEach((item, i) => {
+                        item.classList.add('opacity-0');
+                        dots[i].classList.remove('bg-violet');
+                        dots[i].classList.add('bg-dark-border');
+                    });
+                    
+                    testimonials[index].classList.remove('opacity-0');
+                    dots[index].classList.add('bg-violet');
+                    dots[index].classList.remove('bg-dark-border');
+                    currentIndex = index;
+                }
+
+                dots.forEach(dot => {
+                    dot.addEventListener('click', (e) => {
+                        showTestimonial(parseInt(e.target.dataset.index));
+                    });
+                });
+
+                setInterval(() => {
+                    let nextIndex = (currentIndex + 1) % testimonials.length;
+                    showTestimonial(nextIndex);
+                }, 5000); // Auto-slide every 5 seconds
+
+                showTestimonial(0); // Show first one initially
+            }
+            
+            // --- SECTION 1: ROI Calculator (Phase 1) ---
+            const calcBtn = document.getElementById('calc-roi-btn');
+            const sdrCountInput = document.getElementById('sdr-count'); // Get input elements
+            const avgLeadsInput = document.getElementById('avg-leads');
+            const avgDealInput = document.getElementById('avg-deal');
+            
+            const pipelineEl = document.getElementById('roi-pipeline');
+            const hoursEl = document.getElementById('roi-hours');
+            const totalEl = document.getElementById('roi-total');
+            const resultsContainer = document.getElementById('roi-results-container');
+
+            function calculateROI() {
+                const sdrs = parseFloat(sdrCountInput.value) || 0;
+                const leads = parseFloat(avgLeadsInput.value) || 0;
+                const dealValue = parseFloat(avgDealInput.value) || 0;
+
+                // Assumptions from report & logic
+                const avgReplyRateIncrease = 0.02; // 2% extra conversion
+                const timeSavePerLead = 0.08; // 5 min/lead = 0.08h
+                const sdrHourlyRate = 35; // $35/hr loaded rate
+                const salesosCostPerSDR = 299; // $299/mo
+                
+                const totalLeads = sdrs * leads;
+                
+                // Calculation
+                const savedHours = totalLeads * timeSavePerLead;
+                const savedCost = savedHours * sdrHourlyRate;
+                
+                const extraConversions = totalLeads * avgReplyRateIncrease;
+                const extraRevenue = extraConversions * dealValue;
+                
+                const totalCost = sdrs * salesosCostPerSDR;
+                const totalGain = savedCost + extraRevenue;
+                
+                // Handle division by zero if cost is 0
+                const roi = totalCost > 0 ? totalGain / totalCost : 0; 
+
+                // Display Results
+                if (pipelineEl) pipelineEl.innerText = `$${Math.round(extraRevenue).toLocaleString()}`;
+                if (hoursEl) hoursEl.innerText = `${Math.round(savedHours)}h`;
+                if (totalEl) totalEl.innerText = `${roi.toFixed(1)}x`;
+                
+                if (resultsContainer) resultsContainer.classList.remove('hidden'); // Ensure it's visible
+            }
+
+            if (calcBtn && sdrCountInput && avgLeadsInput && avgDealInput) {
+                // Calculate on page load
+                calculateROI(); 
+                
+                // Recalculate on button click
+                calcBtn.addEventListener('click', calculateROI);
+                
+                // BONUS: Recalculate on input change for dynamic feel
+                [sdrCountInput, avgLeadsInput, avgDealInput].forEach(input => {
+                    input.addEventListener('input', calculateROI);
+                });
+            }
+
+            // --- SECTION 2: Interactive Demo Chat ---
+            const chatBubbleBtn = document.getElementById('chat-bubble-btn');
+            const chatWindow = document.getElementById('chat-window');
+            const chatCloseBtn = document.getElementById('chat-close-btn');
+            const chatMessages = document.getElementById('chat-messages');
+            const chatPrompts = document.getElementById('chat-prompts');
+
+            if (chatBubbleBtn && chatWindow && chatCloseBtn && chatMessages && chatPrompts) {
+                chatBubbleBtn.addEventListener('click', () => {
+                    chatWindow.classList.remove('hidden');
+                    setTimeout(() => {
+                        chatWindow.classList.remove('scale-0', 'opacity-0');
+                        chatWindow.classList.add('scale-100', 'opacity-100');
+                    }, 10);
+                });
+
+                chatCloseBtn.addEventListener('click', () => {
+                    chatWindow.classList.remove('scale-100', 'opacity-100');
+                    chatWindow.classList.add('scale-0', 'opacity-0');
+                    setTimeout(() => chatWindow.classList.add('hidden'), 300);
+                });
+
+                const responses = {
+                    "How do you enrich leads?": {
+                        text: "Great question! I automatically scan 100+ data sources to verify emails, find phone numbers, and identify company firmographics. I hand your SDRs a priority list of enriched, ICP-fit contacts so they never waste time on bad data.",
+                        followUps: ["What workflows can you automate?", "How does this save time?"]
+                    },
+                    "What workflows can you automate?": {
+                        text: "I handle the tasks that drain your team: logging every call and email to your CRM, setting follow-up reminders, and even drafting personalized opening lines based on a prospect's LinkedIn or company news. Your team just focuses on selling.",
+                        followUps: ["How do you enrich leads?", "How does this boost replies?"]
+                    },
+                    "How does this save time?": {
+                        text: "By automating research and data entry, I save SDRs an average of 10 hours per week. That's 10 more hours they can spend actually talking to qualified prospects and closing deals.",
+                        followUps: ["How do you enrich leads?", "What workflows can you automate?"]
+                    },
+                    "How does this boost replies?": {
+                        text: "Personalization is key. Instead of 'Just checking in,' I draft emails like, 'Congrats on your new funding round!' or 'Saw your post on LinkedIn about AI.' This relevance cuts through the noise and gets replies.",
+                        followUps: ["How do you enrich leads?", "What workflows can you automate?"]
+                    }
+                };
+                
+                const initialPrompts = ["How do you enrich leads?", "What workflows can you automate?"];
+
+                function displayPrompts(promptKeys) {
+                    chatPrompts.innerHTML = ''; // Clear old prompts
+                    if (!promptKeys) {
+                        chatPrompts.classList.add('hidden');
+                        return;
+                    }
+                    
+                    promptKeys.forEach(promptText => {
+                        const btn = document.createElement('button');
+                        btn.classList.add('chat-prompt-btn', 'w-full', 'text-left', 'text-sm', 'p-3', 'bg-dark-glass', 'hover:bg-violet/20', 'border', 'border-dark-border', 'rounded-lg', 'text-gray-300', 'transition-colors');
+                        btn.innerText = promptText;
+                        btn.addEventListener('click', handlePromptClick);
+                        chatPrompts.appendChild(btn);
+                    });
+                    chatPrompts.classList.remove('hidden');
+                }
+
+                function handlePromptClick(e) {
+                    const promptText = e.target.innerText;
+                    const response = responses[promptText];
+                    
+                    if (!response) return; // Should not happen
+
+                    const responseText = response.text;
+                    const followUps = response.followUps;
+
+                    // Add user message
+                    const userMessage = document.createElement('div');
+                    userMessage.classList.add('chat-message', 'user-message', 'flex', 'justify-end');
+                    userMessage.innerHTML = `<div class="p-3 bg-violet rounded-lg text-sm text-white">${promptText}</div>`;
+                    chatMessages.appendChild(userMessage);
+
+                    // Add Theta's typing indicator
+                    const typingMessage = document.createElement('div');
+                    typingMessage.classList.add('chat-message', 'theta-message', 'flex');
+                    typingMessage.innerHTML = `
+                        <div class="p-3 bg-dark-glass rounded-lg text-sm text-gray-300">
+                            <span class="typing-cursor"></span>
+                        </div>
+                    `;
+                    chatMessages.appendChild(typingMessage);
+                    chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll down
+
+                    // Hide prompts
+                    displayPrompts(null); // Pass null to hide
+
+                    // Start typing effect
+                    setTimeout(() => {
+                        typewriter(typingMessage.querySelector('div'), responseText, () => {
+                            // Show new follow-up prompts
+                            displayPrompts(followUps);
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                        });
+                    }, 1000);
+                }
+                
+                // Load initial prompts
+                displayPrompts(initialPrompts);
+            }
+
+            function typewriter(element, text, callback, speed = 25) {
+                let i = 0;
+                if (!element) return; // Safety check
+                element.innerHTML = ""; // Clear
+                
+                function type() {
+                    if (i < text.length) {
+                        element.innerHTML += text.charAt(i);
+                        i++;
+                        if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+                        setTimeout(type, speed);
+                    } else {
+                        if (callback) callback();
+                    }
+                }
+                type();
+            }
+
+        });
+    </script>
+</body>
+</html>
